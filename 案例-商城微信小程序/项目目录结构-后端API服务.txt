@@ -1,0 +1,69 @@
+# 后端API服务目录结构
+
+server/
+├── src/                            # 源代码目录
+│   ├── controllers/                # 控制器层
+│   │   ├── userController.js       # 用户相关控制器
+│   │   ├── goodsController.js      # 商品相关控制器
+│   │   ├── orderController.js      # 订单相关控制器
+│   │   ├── cartController.js       # 购物车相关控制器
+│   │   ├── addressController.js    # 地址相关控制器
+│   │   ├── categoryController.js   # 分类相关控制器
+│   │   ├── bannerController.js     # 轮播图相关控制器
+│   │   └── adminController.js      # 管理员相关控制器
+│   ├── models/                     # 数据模型层
+│   │   ├── userModel.js            # 用户模型
+│   │   ├── goodsModel.js           # 商品模型
+│   │   ├── orderModel.js           # 订单模型
+│   │   ├── cartModel.js            # 购物车模型
+│   │   ├── addressModel.js         # 地址模型
+│   │   ├── categoryModel.js        # 分类模型
+│   │   ├── bannerModel.js          # 轮播图模型
+│   │   └── adminModel.js           # 管理员模型
+│   ├── routes/                     # 路由层
+│   │   ├── api/                    # API路由
+│   │   │   ├── userRoutes.js       # 用户相关路由
+│   │   │   ├── goodsRoutes.js      # 商品相关路由
+│   │   │   ├── orderRoutes.js      # 订单相关路由
+│   │   │   ├── cartRoutes.js       # 购物车相关路由
+│   │   │   ├── addressRoutes.js    # 地址相关路由
+│   │   │   ├── categoryRoutes.js   # 分类相关路由
+│   │   │   └── bannerRoutes.js     # 轮播图相关路由
+│   │   └── admin/                  # 管理后台路由
+│   │       ├── adminRoutes.js      # 管理员相关路由
+│   │       ├── goodsManageRoutes.js # 商品管理路由
+│   │       ├── orderManageRoutes.js # 订单管理路由
+│   │       └── statsRoutes.js      # 统计相关路由
+│   ├── middleware/                 # 中间件
+│   │   ├── auth.js                 # 身份认证中间件
+│   │   ├── adminAuth.js            # 管理员认证中间件
+│   │   ├── errorHandler.js         # 错误处理中间件
+│   │   ├── upload.js               # 文件上传中间件
+│   │   └── validation.js           # 数据验证中间件
+│   ├── utils/                      # 工具函数
+│   │   ├── database.js             # 数据库连接
+│   │   ├── jwt.js                  # JWT工具
+│   │   ├── wechat.js               # 微信相关工具
+│   │   ├── payment.js              # 支付相关工具
+│   │   └── logger.js               # 日志工具
+│   ├── config/                     # 配置文件
+│   │   ├── database.js             # 数据库配置
+│   │   ├── wechat.js               # 微信配置
+│   │   ├── payment.js              # 支付配置
+│   │   └── app.js                  # 应用配置
+│   └── app.js                      # 应用入口文件
+├── uploads/                        # 上传文件目录
+│   ├── goods/                      # 商品图片
+│   ├── banner/                     # 轮播图片
+│   └── category/                   # 分类图片
+├── logs/                           # 日志文件目录
+│   ├── access.log                  # 访问日志
+│   ├── error.log                   # 错误日志
+│   └── app.log                     # 应用日志
+├── docs/                           # 文档目录
+│   ├── api.md                      # API文档
+│   └── database.sql                # 数据库建表语句
+├── package.json                    # 项目依赖配置
+├── .env                            # 环境变量
+├── .gitignore                      # Git忽略文件
+└── README.md                       # 项目说明文档 

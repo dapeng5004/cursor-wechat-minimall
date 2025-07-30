@@ -1,0 +1,82 @@
+# 微信小程序前端目录结构
+
+mini-shop/
+├── pages/                          # 页面目录
+│   ├── index/                      # 首页
+│   │   ├── index.wxml             # 页面结构
+│   │   ├── index.wxss             # 页面样式
+│   │   ├── index.js               # 页面逻辑
+│   │   └── index.json             # 页面配置
+│   ├── category/                   # 分类页面
+│   │   ├── category.wxml
+│   │   ├── category.wxss
+│   │   ├── category.js
+│   │   └── category.json
+│   ├── cart/                       # 购物车页面
+│   │   ├── cart.wxml
+│   │   ├── cart.wxss
+│   │   ├── cart.js
+│   │   └── cart.json
+│   ├── mine/                       # 我的页面
+│   │   ├── mine.wxml
+│   │   ├── mine.wxss
+│   │   ├── mine.js
+│   │   └── mine.json
+│   ├── goods-detail/               # 商品详情页
+│   │   ├── goods-detail.wxml
+│   │   ├── goods-detail.wxss
+│   │   ├── goods-detail.js
+│   │   └── goods-detail.json
+│   ├── category-list/              # 分类列表页
+│   │   ├── category-list.wxml
+│   │   ├── category-list.wxss
+│   │   ├── category-list.js
+│   │   └── category-list.json
+│   ├── category-goods/             # 分类商品列表页
+│   │   ├── category-goods.wxml
+│   │   ├── category-goods.wxss
+│   │   ├── category-goods.js
+│   │   └── category-goods.json
+│   ├── order-list/                 # 订单列表页
+│   │   ├── order-list.wxml
+│   │   ├── order-list.wxss
+│   │   ├── order-list.js
+│   │   └── order-list.json
+│   ├── address-list/               # 收货地址列表页
+│   │   ├── address-list.wxml
+│   │   ├── address-list.wxss
+│   │   ├── address-list.js
+│   │   └── address-list.json
+│   ├── address-edit/               # 收货地址编辑页
+│   │   ├── address-edit.wxml
+│   │   ├── address-edit.wxss
+│   │   ├── address-edit.js
+│   │   └── address-edit.json
+│   └── order-confirm/              # 订单确认页
+│       ├── order-confirm.wxml
+│       ├── order-confirm.wxss
+│       ├── order-confirm.js
+│       └── order-confirm.json
+├── components/                     # 自定义组件
+│   ├── goods-item/                 # 商品项组件
+│   │   ├── goods-item.wxml
+│   │   ├── goods-item.wxss
+│   │   ├── goods-item.js
+│   │   └── goods-item.json
+│   └── loading/                    # 加载组件
+│       ├── loading.wxml
+│       ├── loading.wxss
+│       ├── loading.js
+│       └── loading.json
+├── utils/                          # 工具函数
+│   ├── request.js                  # 网络请求封装
+│   ├── auth.js                     # 认证相关
+│   ├── storage.js                  # 本地存储
+│   └── util.js                     # 通用工具函数
+├── images/                         # 图片资源
+│   ├── icons/                      # 图标
+│   └── default/                    # 默认图片
+├── app.js                          # 小程序入口文件
+├── app.json                        # 小程序配置文件
+├── app.wxss                        # 全局样式文件
+└── project.config.json             # 项目配置文件 
