@@ -4,7 +4,9 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
 const path = require('path')
-require('dotenv').config()
+const dotenv = require('dotenv')
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'
+dotenv.config({ path: envFile })
 const config = require('./config')
 
 // 导入中间件

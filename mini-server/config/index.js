@@ -1,6 +1,7 @@
 const baseConfig = require('./config.base')
 const env = process.env.NODE_ENV || 'development'
 let envConfig = {}
+
 try {
   envConfig = require(`./config.${env}`)
 } catch (e) {

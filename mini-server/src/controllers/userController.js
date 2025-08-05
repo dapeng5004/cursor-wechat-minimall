@@ -1,6 +1,6 @@
 const { code2Session } = require('../utils/wechat')
 const { generateToken } = require('../utils/jwt')
-const { executeQuery } = require('../utils/database')
+const UserModel = require('../models/userModel')
 const log = require('../utils/logger')
 
 // 用户登录（微信小程序）
@@ -28,32 +28,25 @@ const login = async (req, res) => {
     const { openid, session_key } = wechatResult
     
     // 查找或创建用户
-    let user = await executeQuery(
-      'SELECT * FROM users WHERE openid = ?',
-      [openid]
-    )
+    let user = await UserModel.findByOpenid(openid)
     
-    if (user.length === 0) {
+    if (!user) {
       // 新用户，创建用户记录
-      const result = await executeQuery(
-        'INSERT INTO users (openid, nickname, avatar, status) VALUES (?, ?, ?, ?)',
-        [openid, '微信用户', null, 1]
-      )
-      
-      user = await executeQuery(
-        'SELECT * FROM users WHERE id = ?',
-        [result.insertId]
-      )
+      user = await UserModel.create({
+        openid,
+        nickname: '微信用户',
+        avatar: null
+      })
     }
     
     // 生成JWT token
     const token = generateToken({
-      id: user[0].id,
-      openid: user[0].openid,
+      id: user.id,
+      openid: user.openid,
       type: 'user'
     })
     
-    log.info('用户登录成功', { userId: user[0].id, openid })
+    log.info('用户登录成功', { userId: user.id, openid })
     
     res.json({
       code: 200,
@@ -61,10 +54,10 @@ const login = async (req, res) => {
       data: {
         token,
         user: {
-          id: user[0].id,
-          nickname: user[0].nickname,
-          avatar: user[0].avatar,
-          phone: user[0].phone
+          id: user.id,
+          nickname: user.nickname,
+          avatar: user.avatar,
+          phone: user.phone
         }
       }
     })
@@ -82,12 +75,9 @@ const getUserInfo = async (req, res) => {
   try {
     const userId = req.user.id
     
-    const users = await executeQuery(
-      'SELECT id, nickname, avatar, phone, gender, status FROM users WHERE id = ?',
-      [userId]
-    )
+    const user = await UserModel.findById(userId)
     
-    if (users.length === 0) {
+    if (!user) {
       return res.status(404).json({
         code: 404,
         message: '用户不存在'
@@ -97,7 +87,7 @@ const getUserInfo = async (req, res) => {
     res.json({
       code: 200,
       message: '获取成功',
-      data: users[0]
+      data: user
     })
   } catch (error) {
     log.error('获取用户信息失败', { error: error.message })
@@ -114,48 +104,26 @@ const updateUserInfo = async (req, res) => {
     const userId = req.user.id
     const { nickname, avatar, phone, gender } = req.body
     
-    const updateFields = []
-    const updateValues = []
+    const updatedUser = await UserModel.update(userId, {
+      nickname,
+      avatar,
+      phone,
+      gender
+    })
     
-    if (nickname !== undefined) {
-      updateFields.push('nickname = ?')
-      updateValues.push(nickname)
-    }
-    
-    if (avatar !== undefined) {
-      updateFields.push('avatar = ?')
-      updateValues.push(avatar)
-    }
-    
-    if (phone !== undefined) {
-      updateFields.push('phone = ?')
-      updateValues.push(phone)
-    }
-    
-    if (gender !== undefined) {
-      updateFields.push('gender = ?')
-      updateValues.push(gender)
-    }
-    
-    if (updateFields.length === 0) {
+    if (!updatedUser) {
       return res.status(400).json({
         code: 400,
         message: '没有需要更新的字段'
       })
     }
     
-    updateValues.push(userId)
-    
-    await executeQuery(
-      `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
-      updateValues
-    )
-    
     log.info('用户信息更新成功', { userId })
     
     res.json({
       code: 200,
-      message: '更新成功'
+      message: '更新成功',
+      data: updatedUser
     })
   } catch (error) {
     log.error('更新用户信息失败', { error: error.message })

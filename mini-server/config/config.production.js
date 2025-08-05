@@ -13,7 +13,7 @@ module.exports = {
     provider: 'aliyun-oss',
     bucket: process.env.OSS_BUCKET || 'your-bucket'
   },
-  logLevel: 'info',
+  logLevel: 'debug',
   apiBaseUrl: process.env.API_BASE_URL || 'https://api.yourdomain.com',
   debug: false
 }

@@ -1,4 +1,4 @@
-const { executeQuery, paginate } = require('../utils/database')
+const GoodsModel = require('../models/goodsModel')
 const log = require('../utils/logger')
 
 // 获取商品列表
@@ -15,44 +15,16 @@ const getGoodsList = async (req, res) => {
       order = 'desc'
     } = req.query
     
-    let sql = 'SELECT g.*, c.name as category_name FROM goods g LEFT JOIN categories c ON g.category_id = c.id WHERE g.status = 1'
-    let params = []
-    
-    // 分类筛选
-    if (category_id) {
-      sql += ' AND g.category_id = ?'
-      params.push(category_id)
+    const filters = {
+      category_id,
+      keyword,
+      min_price,
+      max_price,
+      sort,
+      order
     }
     
-    // 关键词搜索
-    if (keyword) {
-      sql += ' AND (g.name LIKE ? OR g.description LIKE ?)'
-      params.push(`%${keyword}%`)
-      params.push(`%${keyword}%`)
-    }
-    
-    // 价格筛选
-    if (min_price) {
-      sql += ' AND g.price >= ?'
-      params.push(min_price)
-    }
-    
-    if (max_price) {
-      sql += ' AND g.price <= ?'
-      params.push(max_price)
-    }
-    
-    // 排序
-    const allowedSorts = ['created_at', 'price', 'sales', 'updated_at']
-    const allowedOrders = ['asc', 'desc']
-    
-    if (allowedSorts.includes(sort) && allowedOrders.includes(order)) {
-      sql += ` ORDER BY g.${sort} ${order.toUpperCase()}`
-    } else {
-      sql += ' ORDER BY g.created_at DESC'
-    }
-    
-    const result = await paginate(sql, params, page, pageSize)
+    const result = await GoodsModel.getList(filters, page, pageSize)
     
     log.info('获取商品列表成功', { 
       page, 
@@ -81,15 +53,9 @@ const getGoodsDetail = async (req, res) => {
   try {
     const { id } = req.params
     
-    const goods = await executeQuery(
-      `SELECT g.*, c.name as category_name 
-       FROM goods g 
-       LEFT JOIN categories c ON g.category_id = c.id 
-       WHERE g.id = ? AND g.status = 1`,
-      [id]
-    )
+    const goods = await GoodsModel.findById(id)
     
-    if (goods.length === 0) {
+    if (!goods) {
       return res.status(404).json({
         code: 404,
         message: '商品不存在'
@@ -97,17 +63,14 @@ const getGoodsDetail = async (req, res) => {
     }
     
     // 增加浏览量（这里可以添加浏览记录表）
-    await executeQuery(
-      'UPDATE goods SET sales = sales + 1 WHERE id = ?',
-      [id]
-    )
+    await GoodsModel.update(id, { views: goods.views + 1 })
     
     log.info('获取商品详情成功', { goodsId: id })
     
     res.json({
       code: 200,
       message: '获取成功',
-      data: goods[0]
+      data: goods
     })
   } catch (error) {
     log.error('获取商品详情失败', { error: error.message })
@@ -123,17 +86,9 @@ const getRecommendGoods = async (req, res) => {
   try {
     const { limit = 10 } = req.query
     
-    const goods = await executeQuery(
-      `SELECT g.*, c.name as category_name 
-       FROM goods g 
-       LEFT JOIN categories c ON g.category_id = c.id 
-       WHERE g.status = 1 AND g.is_recommend = 1 
-       ORDER BY g.sales DESC, g.created_at DESC 
-       LIMIT ?`,
-      [parseInt(limit)]
-    )
+    const goods = await GoodsModel.getRecommend(limit)
     
-    log.info('获取推荐商品成功', { limit })
+    log.info('获取推荐商品成功', { limit, count: goods.length })
     
     res.json({
       code: 200,
@@ -149,22 +104,14 @@ const getRecommendGoods = async (req, res) => {
   }
 }
 
-// 获取热销商品
+// 获取热门商品
 const getHotGoods = async (req, res) => {
   try {
     const { limit = 10 } = req.query
     
-    const goods = await executeQuery(
-      `SELECT g.*, c.name as category_name 
-       FROM goods g 
-       LEFT JOIN categories c ON g.category_id = c.id 
-       WHERE g.status = 1 
-       ORDER BY g.sales DESC 
-       LIMIT ?`,
-      [parseInt(limit)]
-    )
+    const goods = await GoodsModel.getHot(limit)
     
-    log.info('获取热销商品成功', { limit })
+    log.info('获取热门商品成功', { limit, count: goods.length })
     
     res.json({
       code: 200,
@@ -172,10 +119,10 @@ const getHotGoods = async (req, res) => {
       data: goods
     })
   } catch (error) {
-    log.error('获取热销商品失败', { error: error.message })
+    log.error('获取热门商品失败', { error: error.message })
     res.status(500).json({
       code: 500,
-      message: '获取热销商品失败'
+      message: '获取热门商品失败'
     })
   }
 }
@@ -183,34 +130,16 @@ const getHotGoods = async (req, res) => {
 // 搜索商品
 const searchGoods = async (req, res) => {
   try {
-    const { 
-      keyword, 
-      page = 1, 
-      pageSize = 10,
-      category_id 
-    } = req.query
+    const { keyword, page = 1, pageSize = 10 } = req.query
     
-    if (!keyword) {
+    if (!keyword || keyword.trim().length === 0) {
       return res.status(400).json({
         code: 400,
-        message: '请输入搜索关键词'
+        message: '搜索关键词不能为空'
       })
     }
     
-    let sql = `SELECT g.*, c.name as category_name 
-                FROM goods g 
-                LEFT JOIN categories c ON g.category_id = c.id 
-                WHERE g.status = 1 AND (g.name LIKE ? OR g.description LIKE ?)`
-    let params = [`%${keyword}%`, `%${keyword}%`]
-    
-    if (category_id) {
-      sql += ' AND g.category_id = ?'
-      params.push(category_id)
-    }
-    
-    sql += ' ORDER BY g.sales DESC, g.created_at DESC'
-    
-    const result = await paginate(sql, params, page, pageSize)
+    const result = await GoodsModel.search(keyword, page, pageSize)
     
     log.info('搜索商品成功', { keyword, page, pageSize, total: result.total })
     

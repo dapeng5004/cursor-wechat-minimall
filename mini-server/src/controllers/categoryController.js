@@ -1,12 +1,11 @@
-const { executeQuery, paginate } = require('../utils/database')
+const CategoryModel = require('../models/categoryModel')
+const GoodsModel = require('../models/goodsModel')
 const log = require('../utils/logger')
 
 // 获取分类列表
 const getCategoryList = async (req, res) => {
   try {
-    const categories = await executeQuery(
-      'SELECT * FROM categories WHERE status = 1 ORDER BY sort ASC, id ASC'
-    )
+    const categories = await CategoryModel.getAll()
     
     log.info('获取分类列表成功', { count: categories.length })
     
@@ -29,12 +28,9 @@ const getCategoryDetail = async (req, res) => {
   try {
     const { id } = req.params
     
-    const categories = await executeQuery(
-      'SELECT * FROM categories WHERE id = ? AND status = 1',
-      [id]
-    )
+    const category = await CategoryModel.findById(id)
     
-    if (categories.length === 0) {
+    if (!category) {
       return res.status(404).json({
         code: 404,
         message: '分类不存在'
@@ -46,7 +42,7 @@ const getCategoryDetail = async (req, res) => {
     res.json({
       code: 200,
       message: '获取成功',
-      data: categories[0]
+      data: category
     })
   } catch (error) {
     log.error('获取分类详情失败', { error: error.message })
@@ -69,35 +65,22 @@ const getCategoryGoods = async (req, res) => {
     } = req.query
     
     // 验证分类是否存在
-    const categories = await executeQuery(
-      'SELECT * FROM categories WHERE id = ? AND status = 1',
-      [id]
-    )
+    const category = await CategoryModel.findById(id)
     
-    if (categories.length === 0) {
+    if (!category) {
       return res.status(404).json({
         code: 404,
         message: '分类不存在'
       })
     }
     
-    let sql = `SELECT g.*, c.name as category_name 
-                FROM goods g 
-                LEFT JOIN categories c ON g.category_id = c.id 
-                WHERE g.category_id = ? AND g.status = 1`
-    let params = [id]
-    
-    // 排序
-    const allowedSorts = ['created_at', 'price', 'sales', 'updated_at']
-    const allowedOrders = ['asc', 'desc']
-    
-    if (allowedSorts.includes(sort) && allowedOrders.includes(order)) {
-      sql += ` ORDER BY g.${sort} ${order.toUpperCase()}`
-    } else {
-      sql += ' ORDER BY g.created_at DESC'
+    const filters = {
+      category_id: id,
+      sort,
+      order
     }
     
-    const result = await paginate(sql, params, page, pageSize)
+    const result = await GoodsModel.getList(filters, page, pageSize)
     
     log.info('获取分类商品成功', { 
       categoryId: id, 
@@ -110,7 +93,7 @@ const getCategoryGoods = async (req, res) => {
       code: 200,
       message: '获取成功',
       data: {
-        category: categories[0],
+        category,
         goods: result
       }
     })
@@ -123,41 +106,17 @@ const getCategoryGoods = async (req, res) => {
   }
 }
 
-// 获取首页分类及商品
+// 获取首页分类
 const getHomeCategories = async (req, res) => {
   try {
-    const { limit = 3 } = req.query
+    const categories = await CategoryModel.getByParentId(0)
     
-    // 获取分类列表
-    const categories = await executeQuery(
-      'SELECT * FROM categories WHERE status = 1 ORDER BY sort ASC, id ASC'
-    )
-    
-    // 为每个分类获取商品
-    const result = []
-    for (const category of categories) {
-      const goods = await executeQuery(
-        `SELECT g.*, c.name as category_name 
-         FROM goods g 
-         LEFT JOIN categories c ON g.category_id = c.id 
-         WHERE g.category_id = ? AND g.status = 1 
-         ORDER BY g.is_recommend DESC, g.sales DESC, g.created_at DESC 
-         LIMIT ?`,
-        [category.id, parseInt(limit)]
-      )
-      
-      result.push({
-        ...category,
-        goods
-      })
-    }
-    
-    log.info('获取首页分类成功', { categoryCount: categories.length, limit })
+    log.info('获取首页分类成功', { count: categories.length })
     
     res.json({
       code: 200,
       message: '获取成功',
-      data: result
+      data: categories
     })
   } catch (error) {
     log.error('获取首页分类失败', { error: error.message })
@@ -168,9 +127,31 @@ const getHomeCategories = async (req, res) => {
   }
 }
 
+// 获取分类树
+const getCategoryTree = async (req, res) => {
+  try {
+    const tree = await CategoryModel.getTree()
+    
+    log.info('获取分类树成功', { count: tree.length })
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: tree
+    })
+  } catch (error) {
+    log.error('获取分类树失败', { error: error.message })
+    res.status(500).json({
+      code: 500,
+      message: '获取分类树失败'
+    })
+  }
+}
+
 module.exports = {
   getCategoryList,
   getCategoryDetail,
   getCategoryGoods,
-  getHomeCategories
+  getHomeCategories,
+  getCategoryTree
 }
