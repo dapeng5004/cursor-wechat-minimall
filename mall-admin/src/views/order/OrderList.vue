@@ -91,7 +91,7 @@
               v-if="row.status === 1"
               size="small"
               type="success"
-              @click="shipOrder(row)"
+              @click="shipOrderFn(row)"
             >
               发货
             </el-button>
@@ -125,6 +125,7 @@
     <OrderDetail
       v-model:visible="detailDialogVisible"
       :order-id="currentOrderId"
+      @refresh="getOrderListFn"
     />
 
     <!-- 发货对话框 -->
@@ -162,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getOrderList, shipOrder, updateOrderStatus } from '@/api/order'
@@ -217,11 +218,19 @@ const getOrderListFn = async () => {
       start_date: searchForm.date_range[0],
       end_date: searchForm.date_range[1]
     }
-    const data = await getOrderList(params)
-    orderList.value = data.list || data
-    pagination.total = data.total || data.length
+    const response = await getOrderList(params)
+    // 确保orderList是数组
+    if (response && Array.isArray(response.list)) {
+      orderList.value = response.list
+      pagination.total = response.total || response.list.length
+    } else {
+      orderList.value = []
+      pagination.total = 0
+    }
   } catch (error) {
     ElMessage.error('获取订单列表失败')
+    orderList.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
@@ -328,7 +337,7 @@ const getPaymentMethodText = (method) => {
   return methods[method] || method || '未知'
 }
 
-// 分页处理
+// 分页事件处理
 const handleSizeChange = (size) => {
   pagination.pageSize = size
   pagination.page = 1

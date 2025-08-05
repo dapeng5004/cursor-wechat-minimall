@@ -22,30 +22,16 @@
           <el-input v-model="form.title" placeholder="请输入轮播图标题" />
         </el-form-item>
 
-        <el-form-item label="图片" prop="image">
-          <el-upload
-            class="upload-demo"
-            :action="uploadUrl"
-            :headers="uploadHeaders"
-            :on-success="handleUploadSuccess"
-            :on-error="handleUploadError"
-            :before-upload="beforeUpload"
-            :show-file-list="false"
+        <el-form-item label="轮播图" prop="image">
+          <SimpleUpload
+            v-model="form.image"
             accept="image/*"
-          >
-            <el-button type="primary">选择图片</el-button>
-            <template #tip>
-              <div class="el-upload__tip">
-                只能上传jpg/png文件，且不超过5MB
-              </div>
-            </template>
-          </el-upload>
-          <div v-if="form.image" class="image-preview">
-            <el-image
-              :src="form.image"
-              style="width: 200px; height: 150px; margin-top: 10px"
+            :max-size="5"
+            :tips="[
+              '建议尺寸：800x400px，支持 JPG、PNG 格式',
+              '文件大小不超过 5MB'
+            ]"
             />
-          </div>
         </el-form-item>
 
         <el-form-item label="跳转链接" prop="link">
@@ -58,8 +44,8 @@
 
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio :label="1">启用</el-radio>
-            <el-radio :label="0">禁用</el-radio>
+            <el-radio :value="1">启用</el-radio>
+            <el-radio :value="0">禁用</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -80,7 +66,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { getBannerDetail, addBanner, updateBanner } from '@/api/banner'
-import { getToken } from '@/utils/auth'
+import SimpleUpload from '@/components/SimpleUpload.vue'
+import { uploadImageFile, processImageData } from '@/utils/upload'
 
 const route = useRoute()
 const router = useRouter()
@@ -115,16 +102,6 @@ const isEdit = computed(() => {
   return !!route.params.id
 })
 
-const uploadUrl = computed(() => {
-  return import.meta.env.VITE_API_BASE_URL + '/admin/upload/file'
-})
-
-const uploadHeaders = computed(() => {
-  return {
-    Authorization: `Bearer ${getToken()}`
-  }
-})
-
 // 获取详情
 const getDetail = async () => {
   if (!isEdit.value) return
@@ -146,11 +123,30 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     submitLoading.value = true
     
+    // 处理图片上传
+    let imageUrl = processImageData(form.image)
+    
+    // 如果是文件对象，需要上传
+    if (form.image && form.image.file) {
+      try {
+        imageUrl = await uploadImageFile(form.image.file)
+      } catch (error) {
+        ElMessage.error('图片上传失败：' + error.message)
+        return
+      }
+    }
+    
+    // 准备提交数据
+    const submitData = {
+      ...form,
+      image: imageUrl
+    }
+    
     if (isEdit.value) {
-      await updateBanner(form)
+      await updateBanner(submitData)
       ElMessage.success('更新成功')
     } else {
-      await addBanner(form)
+      await addBanner(submitData)
       ElMessage.success('创建成功')
     }
     
@@ -160,31 +156,6 @@ const handleSubmit = async () => {
   } finally {
     submitLoading.value = false
   }
-}
-
-// 文件上传
-const handleUploadSuccess = (response) => {
-  form.image = response.data.url
-  ElMessage.success('上传成功')
-}
-
-const handleUploadError = () => {
-  ElMessage.error('上传失败')
-}
-
-const beforeUpload = (file) => {
-  const isImage = file.type.startsWith('image/')
-  const isLt5M = file.size / 1024 / 1024 < 5
-
-  if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
-    return false
-  }
-  if (!isLt5M) {
-    ElMessage.error('图片大小不能超过 5MB!')
-    return false
-  }
-  return true
 }
 
 // 生命周期
@@ -199,10 +170,6 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 10px;
-  }
-
-  .image-preview {
-    margin-top: 10px;
   }
 }
 </style> 

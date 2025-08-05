@@ -28,9 +28,21 @@ html, body {
   --background-color: #f5f7fa;
 }
 
+// 响应式断点
+$breakpoint-mobile: 768px;
+$breakpoint-small: 480px;
+
 // 布局样式
 .app-container {
   padding: 20px;
+  
+  @media (max-width: $breakpoint-mobile) {
+    padding: 15px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    padding: 10px;
+  }
 }
 
 // 表格样式
@@ -38,6 +50,14 @@ html, body {
   background: #fff;
   border-radius: 4px;
   padding: 20px;
+  
+  @media (max-width: $breakpoint-mobile) {
+    padding: 15px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    padding: 10px;
+  }
 }
 
 // 表单样式
@@ -45,4 +65,288 @@ html, body {
   background: #fff;
   border-radius: 4px;
   padding: 20px;
+  
+  @media (max-width: $breakpoint-mobile) {
+    padding: 15px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    padding: 10px;
+  }
+}
+
+// 响应式表格
+.el-table {
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+    
+    .el-table__header-wrapper {
+      .el-table__header {
+        th {
+          padding: 8px 4px;
+          font-size: 13px;
+        }
+      }
+    }
+    
+    .el-table__body-wrapper {
+      .el-table__body {
+        td {
+          padding: 8px 4px;
+          font-size: 13px;
+        }
+      }
+    }
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    font-size: 12px;
+    
+    .el-table__header-wrapper {
+      .el-table__header {
+        th {
+          padding: 6px 2px;
+          font-size: 12px;
+        }
+      }
+    }
+    
+    .el-table__body-wrapper {
+      .el-table__body {
+        td {
+          padding: 6px 2px;
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+// 响应式表单
+.el-form {
+  @media (max-width: $breakpoint-mobile) {
+    .el-form-item {
+      margin-bottom: 15px;
+      
+      .el-form-item__label {
+        font-size: 14px;
+        line-height: 32px;
+      }
+      
+      .el-form-item__content {
+        .el-input,
+        .el-select,
+        .el-textarea {
+          .el-input__wrapper {
+            height: 36px;
+          }
+        }
+      }
+    }
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    .el-form-item {
+      margin-bottom: 12px;
+      
+      .el-form-item__label {
+        font-size: 13px;
+        line-height: 30px;
+      }
+      
+      .el-form-item__content {
+        .el-input,
+        .el-select,
+        .el-textarea {
+          .el-input__wrapper {
+            height: 32px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 响应式按钮
+.el-button {
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+    padding: 8px 15px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}
+
+// 响应式卡片
+.el-card {
+  @media (max-width: $breakpoint-mobile) {
+    .el-card__header {
+      padding: 15px;
+      font-size: 16px;
+    }
+    
+    .el-card__body {
+      padding: 15px;
+    }
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    .el-card__header {
+      padding: 12px;
+      font-size: 15px;
+    }
+    
+    .el-card__body {
+      padding: 12px;
+    }
+  }
+}
+
+// 响应式分页
+.el-pagination {
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+    
+    .el-pagination__total,
+    .el-pagination__jump {
+      font-size: 13px;
+    }
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    font-size: 13px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    .el-pagination__total,
+    .el-pagination__jump {
+      font-size: 12px;
+    }
+  }
+}
+
+// 响应式对话框
+.el-dialog {
+  @media (max-width: $breakpoint-mobile) {
+    width: 90% !important;
+    margin: 5vh auto !important;
+    
+    .el-dialog__header {
+      padding: 15px 20px;
+    }
+    
+    .el-dialog__body {
+      padding: 15px 20px;
+    }
+    
+    .el-dialog__footer {
+      padding: 10px 20px;
+    }
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    width: 95% !important;
+    margin: 2vh auto !important;
+    
+    .el-dialog__header {
+      padding: 12px 15px;
+    }
+    
+    .el-dialog__body {
+      padding: 12px 15px;
+    }
+    
+    .el-dialog__footer {
+      padding: 8px 15px;
+    }
+  }
+}
+
+// 响应式消息提示
+.el-message {
+  @media (max-width: $breakpoint-mobile) {
+    min-width: 300px;
+    padding: 10px 15px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    min-width: 280px;
+    padding: 8px 12px;
+  }
+}
+
+// 响应式下拉菜单
+.el-dropdown-menu {
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+    
+    .el-dropdown-menu__item {
+      padding: 8px 16px;
+    }
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    font-size: 13px;
+    
+    .el-dropdown-menu__item {
+      padding: 6px 12px;
+    }
+  }
+}
+
+// 工具类
+.hidden-mobile {
+  @media (max-width: $breakpoint-mobile) {
+    display: none !important;
+  }
+}
+
+.hidden-small {
+  @media (max-width: $breakpoint-small) {
+    display: none !important;
+  }
+}
+
+.visible-mobile {
+  display: none;
+  
+  @media (max-width: $breakpoint-mobile) {
+    display: block;
+  }
+}
+
+.visible-small {
+  display: none;
+  
+  @media (max-width: $breakpoint-small) {
+    display: block;
+  }
+}
+
+// 文本响应式
+.text-responsive {
+  @media (max-width: $breakpoint-mobile) {
+    font-size: 14px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    font-size: 13px;
+  }
+}
+
+// 间距响应式
+.spacing-responsive {
+  @media (max-width: $breakpoint-mobile) {
+    margin: 15px 0;
+    padding: 15px;
+  }
+  
+  @media (max-width: $breakpoint-small) {
+    margin: 10px 0;
+    padding: 10px;
+  }
 } 

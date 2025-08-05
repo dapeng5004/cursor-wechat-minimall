@@ -1,29 +1,28 @@
 <template>
   <div class="goods-list">
     <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>商品管理</span>
-          <el-button type="primary" @click="handleAdd">
+      <div class="goods-header">
+        <div class="header-left">
+          <span class="title">商品管理</span>
+          <el-button type="primary" @click="openEditDialog()">
             <el-icon><Plus /></el-icon>
             新增商品
           </el-button>
         </div>
-      </template>
-
-      <!-- 搜索栏 -->
-      <div class="search-bar">
-        <el-form :inline="true" :model="searchForm" class="search-form">
-          <el-form-item label="商品名称">
+        <div class="header-right">
+          <div class="search-form">
             <el-input
               v-model="searchForm.name"
               placeholder="请输入商品名称"
               clearable
-              style="width: 200px"
-            />
-          </el-form-item>
-          <el-form-item label="分类">
-            <el-select v-model="searchForm.category_id" placeholder="请选择分类" clearable style="width: 150px">
+              class="search-input"
+              @keyup.enter="handleSearch"
+            >
+              <template #prefix>
+                <el-icon><Search /></el-icon>
+              </template>
+            </el-input>
+            <el-select v-model="searchForm.category_id" placeholder="请选择分类" clearable class="form-item">
               <el-option
                 v-for="item in categoryOptions"
                 :key="item.id"
@@ -31,24 +30,22 @@
                 :value="item.id"
               />
             </el-select>
-          </el-form-item>
-          <el-form-item label="状态">
-            <el-select v-model="searchForm.status" placeholder="请选择状态" clearable style="width: 120px">
+            <el-select v-model="searchForm.status" placeholder="请选择状态" clearable class="form-item">
               <el-option label="上架" :value="1" />
               <el-option label="下架" :value="0" />
             </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">
-              <el-icon><Search /></el-icon>
-              搜索
-            </el-button>
-            <el-button @click="handleReset">
-              <el-icon><Refresh /></el-icon>
-              重置
-            </el-button>
-          </el-form-item>
-        </el-form>
+            <div class="button-group">
+              <el-button type="primary" @click="handleSearch">
+                <el-icon><Search /></el-icon>
+                搜索
+              </el-button>
+              <el-button @click="handleReset">
+                <el-icon><Refresh /></el-icon>
+                重置
+              </el-button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 数据表格 -->
@@ -62,8 +59,7 @@
         <el-table-column label="商品图片" width="120">
           <template #default="{ row }">
             <el-image
-              :src="row.image"
-              :preview-src-list="[row.image]"
+              :src="getImageUrl(row.image)"
               fit="cover"
               style="width: 80px; height: 80px; border-radius: 4px"
             />
@@ -98,17 +94,21 @@
             />
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="创建时间" width="180" />
+        <el-table-column prop="created_at" label="创建时间" width="180">
+          <template #default="{ row }">
+            {{ formatTime(row.created_at) }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleEdit(row)">
-              <el-icon><Edit /></el-icon>
-              编辑
-            </el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)">
-              <el-icon><Delete /></el-icon>
-              删除
-            </el-button>
+            <div class="operation-buttons">
+              <el-button size="small" type="primary" @click="openEditDialog(row)">
+                编辑
+              </el-button>
+              <el-button size="small" type="danger" @click="handleDelete(row)">
+                删除
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -126,18 +126,24 @@
         />
       </div>
     </el-card>
+
+    <!-- 商品编辑弹窗 -->
+    <GoodsEdit
+      v-model:visible="editDialogVisible"
+      :goods="currentGoods"
+      @refresh="getList"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Refresh, Edit, Delete } from '@element-plus/icons-vue'
-import { getGoodsList, deleteGoods, updateGoods } from '@/api/goods'
+import { Search, Plus, Refresh } from '@element-plus/icons-vue'
+import { getGoodsList, deleteGoods, updateGoods, updateGoodsStatus, updateGoodsRecommend, getGoodsDetail } from '@/api/goods'
 import { getCategoryList } from '@/api/category'
-
-const router = useRouter()
+import { getImageUrl } from '@/utils/image'
+import GoodsEdit from '@/views/goods/GoodsEdit.vue'
 
 // 响应式数据
 const loading = ref(false)
@@ -147,8 +153,8 @@ const categoryOptions = ref([])
 // 搜索表单
 const searchForm = reactive({
   name: '',
-  category_id: '',
-  status: ''
+  category_id: null, // 使用null而不是空字符串
+  status: null // 使用null而不是空字符串
 })
 
 // 分页
@@ -157,6 +163,10 @@ const pagination = reactive({
   pageSize: 10,
   total: 0
 })
+
+// 弹窗相关
+const editDialogVisible = ref(false)
+const currentGoods = ref(null)
 
 // 获取列表数据
 const getList = async () => {
@@ -167,11 +177,27 @@ const getList = async () => {
       pageSize: pagination.pageSize,
       ...searchForm
     }
+    
+    console.log('搜索参数:', params)
+    console.log('搜索表单:', searchForm)
+    
     const response = await getGoodsList(params)
-    tableData.value = response.list
-    pagination.total = response.total
+    
+    console.log('API响应:', response)
+    
+    // 响应拦截器已经提取了data字段，所以response就是data
+    if (response && response.list) {
+      tableData.value = response.list
+      pagination.total = response.total || 0
+    } else {
+      tableData.value = []
+      pagination.total = 0
+    }
   } catch (error) {
-    ElMessage.error('获取列表失败')
+    console.error('获取商品列表失败:', error)
+    ElMessage.error('获取商品列表失败')
+    tableData.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
@@ -180,38 +206,66 @@ const getList = async () => {
 // 获取分类选项
 const getCategoryOptions = async () => {
   try {
-    const response = await getCategoryList({ pageSize: 1000 })
-    categoryOptions.value = response.list
+    const response = await getCategoryList()
+    // 响应拦截器已经提取了data字段，所以response就是data
+    const categoryData = response.list || response || []
+    // 过滤掉无效的分类数据，确保id和name都存在
+    categoryOptions.value = categoryData.filter(item => 
+      item && 
+      item.id !== null && 
+      item.id !== undefined && 
+      item.name && 
+      item.name.trim() !== ''
+    )
   } catch (error) {
-    console.error('获取分类失败:', error)
+    ElMessage.error('获取分类列表失败')
+    categoryOptions.value = []
   }
 }
 
 // 搜索
 const handleSearch = () => {
+  console.log('执行搜索，当前搜索表单:', searchForm)
   pagination.page = 1
   getList()
 }
 
 // 重置
 const handleReset = () => {
+  console.log('执行重置')
   Object.assign(searchForm, {
     name: '',
-    category_id: '',
-    status: ''
+    category_id: null, // 使用null而不是空字符串
+    status: null // 使用null而不是空字符串
   })
+  console.log('重置后的搜索表单:', searchForm)
   pagination.page = 1
   getList()
 }
 
-// 新增
-const handleAdd = () => {
-  router.push('/goods/edit')
-}
-
-// 编辑
-const handleEdit = (row) => {
-  router.push(`/goods/edit/${row.id}`)
+// 打开编辑弹窗
+const openEditDialog = async (row) => {
+  try {
+    console.log('=== 编辑弹窗调试 ===')
+    console.log('列表行数据:', row)
+    console.log('列表行状态值:', { status: row.status, is_recommend: row.is_recommend })
+    
+    // 获取完整的商品详情
+    const goodsDetail = await getGoodsDetail(row.id)
+    console.log('API返回的商品详情:', goodsDetail)
+    console.log('API返回的状态值:', { 
+      status: goodsDetail?.status, 
+      is_recommend: goodsDetail?.is_recommend 
+    })
+    
+    currentGoods.value = goodsDetail || row
+    editDialogVisible.value = true
+  } catch (error) {
+    console.error('获取商品详情失败:', error)
+    // 如果获取详情失败，使用列表数据
+    currentGoods.value = row
+    editDialogVisible.value = true
+  }
 }
 
 // 删除
@@ -236,40 +290,68 @@ const handleDelete = async (row) => {
 // 状态切换
 const handleStatusChange = async (row) => {
   try {
-    await updateGoods({
+    await updateGoodsStatus({
       id: row.id,
       status: row.status
     })
     ElMessage.success('状态更新成功')
+    // 刷新列表数据
+    getList()
   } catch (error) {
     ElMessage.error('状态更新失败')
-    row.status = row.status === 1 ? 0 : 1 // 恢复原状态
+    // 恢复原状态
+    row.status = row.status === 1 ? 0 : 1
   }
 }
 
 // 推荐切换
 const handleRecommendChange = async (row) => {
   try {
-    await updateGoods({
+    await updateGoodsRecommend({
       id: row.id,
       is_recommend: row.is_recommend
     })
     ElMessage.success('推荐状态更新成功')
+    // 刷新列表数据
+    getList()
   } catch (error) {
     ElMessage.error('推荐状态更新失败')
-    row.is_recommend = row.is_recommend === 1 ? 0 : 1 // 恢复原状态
+    // 恢复原状态
+    row.is_recommend = row.is_recommend === 1 ? 0 : 1
   }
 }
 
-// 分页
-const handleSizeChange = (val) => {
-  pagination.pageSize = val
+// 分页事件处理
+const handleSizeChange = (size) => {
+  pagination.pageSize = size
+  pagination.page = 1
   getList()
 }
 
-const handleCurrentChange = (val) => {
-  pagination.page = val
+const handleCurrentChange = (page) => {
+  pagination.page = page
   getList()
+}
+
+// 时间格式化
+const formatTime = (timeStr) => {
+  if (!timeStr) return ''
+  
+  try {
+    const date = new Date(timeStr)
+    if (isNaN(date.getTime())) return timeStr
+    
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const seconds = String(date.getSeconds()).padStart(2, '0')
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+  } catch (error) {
+    return timeStr
+  }
 }
 
 // 生命周期
@@ -281,22 +363,138 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .goods-list {
-  .card-header {
+  .goods-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-  }
-
-  .search-bar {
+    align-items: flex-start;
     margin-bottom: 20px;
     padding: 20px;
-    background: #f5f7fa;
+    background-color: #fff;
     border-radius: 4px;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      white-space: nowrap;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+      min-width: 0;
+    }
+
+    // 搜索表单响应式
+    .search-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+
+      .form-item {
+        flex: 1;
+        min-width: 200px;
+        
+        @media (max-width: 768px) {
+          min-width: 150px;
+        }
+        
+        @media (max-width: 480px) {
+          min-width: 100%;
+        }
+      }
+
+      .search-input {
+        flex: 2;
+        min-width: 200px;
+        
+        @media (max-width: 768px) {
+          flex: 1;
+          min-width: 150px;
+        }
+        
+        @media (max-width: 480px) {
+          min-width: 100%;
+        }
+      }
+
+      .button-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        
+        @media (max-width: 480px) {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+
+  // 表格响应式
+  .el-table {
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 12px;
+    }
+  }
+
+  // 表格列响应式
+  .el-table .el-table__cell {
+    @media (max-width: 768px) {
+      padding: 8px 4px;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 6px 2px;
+    }
+  }
+
+  // 操作按钮响应式
+  .operation-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 2px;
+    }
   }
 
   .pagination {
     margin-top: 20px;
     text-align: right;
+    
+    @media (max-width: 768px) {
+      text-align: center;
+    }
+    
+    @media (max-width: 480px) {
+      .el-pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
   }
 }
 </style> 

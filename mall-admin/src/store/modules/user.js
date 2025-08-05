@@ -19,6 +19,7 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await login(userInfo)
         this.token = response.token
+        this.userInfo = response.admin || {}
         setToken(response.token)
         return response
       } catch (error) {
@@ -44,12 +45,14 @@ export const useUserStore = defineStore('user', {
     async logout() {
       try {
         await logout()
+      } catch (error) {
+        console.warn('退出登录API调用失败:', error)
+      } finally {
+        // 无论API是否成功，都清除本地状态
         this.token = ''
         this.userInfo = {}
         this.roles = []
         removeToken()
-      } catch (error) {
-        throw error
       }
     }
   }

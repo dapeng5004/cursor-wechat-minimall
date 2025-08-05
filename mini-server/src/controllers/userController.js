@@ -1,0 +1,193 @@
+const { code2Session } = require('../utils/wechat')
+const { generateToken } = require('../utils/jwt')
+const { executeQuery } = require('../utils/database')
+const log = require('../utils/logger')
+
+// 用户登录（微信小程序）
+const login = async (req, res) => {
+  try {
+    const { code } = req.body
+    
+    if (!code) {
+      return res.status(400).json({
+        code: 400,
+        message: '缺少登录凭证'
+      })
+    }
+    
+    // 调用微信API获取用户openid
+    const wechatResult = await code2Session(code)
+    
+    if (wechatResult.errcode) {
+      return res.status(400).json({
+        code: 400,
+        message: '微信登录失败：' + wechatResult.errmsg
+      })
+    }
+    
+    const { openid, session_key } = wechatResult
+    
+    // 查找或创建用户
+    let user = await executeQuery(
+      'SELECT * FROM users WHERE openid = ?',
+      [openid]
+    )
+    
+    if (user.length === 0) {
+      // 新用户，创建用户记录
+      const result = await executeQuery(
+        'INSERT INTO users (openid, nickname, avatar, status) VALUES (?, ?, ?, ?)',
+        [openid, '微信用户', null, 1]
+      )
+      
+      user = await executeQuery(
+        'SELECT * FROM users WHERE id = ?',
+        [result.insertId]
+      )
+    }
+    
+    // 生成JWT token
+    const token = generateToken({
+      id: user[0].id,
+      openid: user[0].openid,
+      type: 'user'
+    })
+    
+    log.info('用户登录成功', { userId: user[0].id, openid })
+    
+    res.json({
+      code: 200,
+      message: '登录成功',
+      data: {
+        token,
+        user: {
+          id: user[0].id,
+          nickname: user[0].nickname,
+          avatar: user[0].avatar,
+          phone: user[0].phone
+        }
+      }
+    })
+  } catch (error) {
+    log.error('用户登录失败', { error: error.message })
+    res.status(500).json({
+      code: 500,
+      message: '登录失败'
+    })
+  }
+}
+
+// 获取用户信息
+const getUserInfo = async (req, res) => {
+  try {
+    const userId = req.user.id
+    
+    const users = await executeQuery(
+      'SELECT id, nickname, avatar, phone, gender, status FROM users WHERE id = ?',
+      [userId]
+    )
+    
+    if (users.length === 0) {
+      return res.status(404).json({
+        code: 404,
+        message: '用户不存在'
+      })
+    }
+    
+    res.json({
+      code: 200,
+      message: '获取成功',
+      data: users[0]
+    })
+  } catch (error) {
+    log.error('获取用户信息失败', { error: error.message })
+    res.status(500).json({
+      code: 500,
+      message: '获取用户信息失败'
+    })
+  }
+}
+
+// 更新用户信息
+const updateUserInfo = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const { nickname, avatar, phone, gender } = req.body
+    
+    const updateFields = []
+    const updateValues = []
+    
+    if (nickname !== undefined) {
+      updateFields.push('nickname = ?')
+      updateValues.push(nickname)
+    }
+    
+    if (avatar !== undefined) {
+      updateFields.push('avatar = ?')
+      updateValues.push(avatar)
+    }
+    
+    if (phone !== undefined) {
+      updateFields.push('phone = ?')
+      updateValues.push(phone)
+    }
+    
+    if (gender !== undefined) {
+      updateFields.push('gender = ?')
+      updateValues.push(gender)
+    }
+    
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        code: 400,
+        message: '没有需要更新的字段'
+      })
+    }
+    
+    updateValues.push(userId)
+    
+    await executeQuery(
+      `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateValues
+    )
+    
+    log.info('用户信息更新成功', { userId })
+    
+    res.json({
+      code: 200,
+      message: '更新成功'
+    })
+  } catch (error) {
+    log.error('更新用户信息失败', { error: error.message })
+    res.status(500).json({
+      code: 500,
+      message: '更新用户信息失败'
+    })
+  }
+}
+
+// 用户退出登录
+const logout = async (req, res) => {
+  try {
+    // JWT token会在客户端删除，服务端无需特殊处理
+    log.info('用户退出登录', { userId: req.user.id })
+    
+    res.json({
+      code: 200,
+      message: '退出成功'
+    })
+  } catch (error) {
+    log.error('用户退出登录失败', { error: error.message })
+    res.status(500).json({
+      code: 500,
+      message: '退出失败'
+    })
+  }
+}
+
+module.exports = {
+  login,
+  getUserInfo,
+  updateUserInfo,
+  logout
+}

@@ -48,7 +48,7 @@
       
       <div class="login-tips">
         <p>默认账号：admin</p>
-        <p>默认密码：admin</p>
+        <p>默认密码：123456</p>
       </div>
     </div>
   </div>
@@ -88,7 +88,6 @@ const handleLogin = async () => {
     loading.value = true
     
     await userStore.login(loginForm)
-    await userStore.getInfo()
     
     ElMessage.success('登录成功')
     router.push('/dashboard')

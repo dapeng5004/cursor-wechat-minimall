@@ -31,15 +31,16 @@
         stripe
         v-loading="loading"
         style="margin-top: 20px;"
+        :show-overflow-tooltip="false"
       >
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="image" label="分类图片" width="120">
+        <el-table-column prop="image" label="分类图片" width="120" :show-overflow-tooltip="false">
           <template #default="{ row }">
             <el-image
-              :src="row.image || '/placeholder.png'"
+              :src="getImageUrl(row.image) || '/placeholder.png'"
               style="width: 60px; height: 60px; border-radius: 4px;"
               fit="cover"
-              :preview-src-list="[row.image]"
+              :preview-src-list="[getImageUrl(row.image)]"
             >
               <template #error>
                 <div class="image-placeholder">
@@ -50,18 +51,21 @@
           </template>
         </el-table-column>
         <el-table-column prop="name" label="分类名称" min-width="150" />
-        <el-table-column prop="sort" label="排序" width="100">
+        <el-table-column prop="sort" label="排序" width="160" :show-overflow-tooltip="false">
           <template #default="{ row }">
-            <el-input-number
-              v-model="row.sort"
-              :min="0"
-              :max="999"
-              size="small"
-              @change="(value) => handleSortChange(row, value)"
-            />
+            <span class="sort-control-wrapper">
+              <el-input-number
+                v-model="row.sort"
+                :min="0"
+                :max="999"
+                size="small"
+                style="width: 140px;"
+                @change="(value) => handleSortChange(row, value)"
+              />
+            </span>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="100" :show-overflow-tooltip="false">
           <template #default="{ row }">
             <el-switch
               v-model="row.status"
@@ -111,13 +115,13 @@
     <CategoryEdit
       v-model:visible="editDialogVisible"
       :category="currentCategory"
-      @refresh="getCategoryList"
+      @refresh="getCategoryListFn"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Picture } from '@element-plus/icons-vue'
 import {
@@ -128,6 +132,7 @@ import {
 } from '@/api/category'
 import CategoryEdit from './CategoryEdit.vue'
 import { formatDate } from '@/utils/format'
+import { getImageUrl } from '@/utils/image'
 
 // 响应式数据
 const loading = ref(false)
@@ -151,11 +156,23 @@ const getCategoryListFn = async () => {
       pageSize: pagination.pageSize,
       keyword: searchKeyword.value
     }
-    const data = await getCategoryList(params)
-    categoryList.value = data.list || data
-    pagination.total = data.total || data.length
+    const response = await getCategoryList(params)
+    // 确保categoryList是数组，并为每个项保存原始排序值和状态值
+    if (response && Array.isArray(response.list)) {
+      categoryList.value = response.list.map(item => ({
+        ...item,
+        originalSort: item.sort, // 保存原始排序值
+        originalStatus: item.status // 保存原始状态值
+      }))
+      pagination.total = response.total || response.list.length
+    } else {
+      categoryList.value = []
+      pagination.total = 0
+    }
   } catch (error) {
     ElMessage.error('获取分类列表失败')
+    categoryList.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
@@ -179,6 +196,14 @@ const openEditDialog = (category = null) => {
   currentCategory.value = category
   editDialogVisible.value = true
 }
+
+// 监听编辑对话框关闭
+watch(editDialogVisible, (newVal) => {
+  if (!newVal) {
+    // 对话框关闭时刷新数据
+    getCategoryListFn()
+  }
+})
 
 // 删除分类
 const handleDelete = async (row) => {
@@ -214,10 +239,12 @@ const handleStatusChange = async (row, value) => {
       status: value
     })
     ElMessage.success('状态更新成功')
+    // 移除立即刷新，避免条目跳动，等待页面刷新时再同步数据
+    // getCategoryListFn()
   } catch (error) {
     ElMessage.error('状态更新失败')
     // 恢复原状态
-    row.status = value === 1 ? 0 : 1
+    row.status = row.originalStatus || 0
   }
 }
 
@@ -229,6 +256,8 @@ const handleSortChange = async (row, value) => {
       sort: value
     })
     ElMessage.success('排序更新成功')
+    // 移除立即刷新，避免条目跳动，等待页面刷新时再重新排序
+    // getCategoryListFn()
   } catch (error) {
     ElMessage.error('排序更新失败')
     // 恢复原排序
@@ -236,7 +265,7 @@ const handleSortChange = async (row, value) => {
   }
 }
 
-// 分页处理
+// 分页事件处理
 const handleSizeChange = (size) => {
   pagination.pageSize = size
   pagination.page = 1
@@ -259,18 +288,25 @@ onMounted(() => {
   .category-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 4px;
+    flex-wrap: wrap;
+    gap: 16px;
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 16px;
+      flex-wrap: wrap;
 
       .title {
         font-size: 18px;
         font-weight: bold;
-        color: var(--text-color-primary);
+        color: #333;
+        white-space: nowrap;
       }
     }
 
@@ -278,6 +314,125 @@ onMounted(() => {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  // 表格响应式
+  .el-table {
+    @media (max-width: 768px) {
+      font-size: 14px;
+      
+      .el-input-number {
+        width: 120px !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 12px;
+      
+      .el-input-number {
+        width: 100px !important;
+      }
+    }
+  }
+
+  // 表格列响应式
+  .el-table .el-table__cell {
+    @media (max-width: 768px) {
+      padding: 8px 4px;
+    }
+    
+    @media (max-width: 480px) {
+      padding: 6px 2px;
+    }
+  }
+
+  // 排序控件包装器样式
+  .sort-control-wrapper {
+    display: inline-block;
+    width: 100%;
+    overflow: visible !important;
+    
+    .el-input-number {
+      width: 140px !important;
+      overflow: visible !important;
+    }
+  }
+
+  // 强制隐藏表格单元格的省略号
+  .el-table {
+    .el-table__cell {
+      .cell {
+        overflow: visible !important;
+        text-overflow: unset !important;
+        white-space: normal !important;
+        
+        &::after {
+          display: none !important;
+          content: none !important;
+        }
+      }
+    }
+    
+    // 特别针对排序列和状态列
+    .el-table__row {
+      td:nth-child(4), // 排序列
+      td:nth-child(5) { // 状态列
+        .cell {
+          overflow: visible !important;
+          text-overflow: unset !important;
+          white-space: normal !important;
+          
+          &::after {
+            display: none !important;
+            content: none !important;
+          }
+        }
+      }
+    }
+    
+    // 全局覆盖省略号样式
+    .el-table__cell .cell {
+      overflow: visible !important;
+      text-overflow: unset !important;
+      white-space: normal !important;
+      
+      &::after {
+        display: none !important;
+        content: none !important;
+      }
+    }
+  }
+
+  // 操作按钮响应式
+  .operation-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 2px;
+    }
+  }
+
+  .pagination {
+    margin-top: 20px;
+    text-align: right;
+    
+    @media (max-width: 768px) {
+      text-align: center;
+    }
+    
+    @media (max-width: 480px) {
+      .el-pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
     }
   }
 

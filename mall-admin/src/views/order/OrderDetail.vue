@@ -1,91 +1,85 @@
 <template>
-  <div class="order-detail">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <el-button @click="$router.go(-1)">
-            <el-icon><ArrowLeft /></el-icon>
-            返回
-          </el-button>
-          <span>订单详情</span>
-        </div>
-      </template>
+  <el-dialog
+    :model-value="visible"
+    @update:model-value="emit('update:visible', $event)"
+    title="订单详情"
+    width="800px"
+    :close-on-click-modal="false"
+  >
+    <div v-loading="loading">
+      <!-- 订单基本信息 -->
+      <el-descriptions title="订单信息" :column="3" border>
+        <el-descriptions-item label="订单号">{{ orderInfo.order_no }}</el-descriptions-item>
+        <el-descriptions-item label="订单状态">
+          <el-tag :type="getStatusType(orderInfo.status)">
+            {{ getStatusText(orderInfo.status) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="订单金额">¥{{ orderInfo.total_amount }}</el-descriptions-item>
+        <el-descriptions-item label="支付方式">{{ orderInfo.payment_method || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="支付时间">{{ formatDate(orderInfo.payment_time) || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ formatDate(orderInfo.created_at) }}</el-descriptions-item>
+      </el-descriptions>
 
-      <div v-loading="loading">
-        <!-- 订单基本信息 -->
-        <el-descriptions title="订单信息" :column="3" border>
-          <el-descriptions-item label="订单号">{{ orderInfo.order_no }}</el-descriptions-item>
-          <el-descriptions-item label="订单状态">
-            <el-tag :type="getStatusType(orderInfo.status)">
-              {{ getStatusText(orderInfo.status) }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="订单金额">¥{{ orderInfo.total_amount }}</el-descriptions-item>
-          <el-descriptions-item label="支付方式">{{ orderInfo.payment_method || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="支付时间">{{ orderInfo.payment_time || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ orderInfo.created_at }}</el-descriptions-item>
-        </el-descriptions>
+      <!-- 收货信息 -->
+      <el-descriptions title="收货信息" :column="2" border style="margin-top: 20px;">
+        <el-descriptions-item label="收货人">{{ addressInfo.name }}</el-descriptions-item>
+        <el-descriptions-item label="联系电话">{{ addressInfo.phone }}</el-descriptions-item>
+        <el-descriptions-item label="收货地址" :span="2">
+          {{ addressInfo.province }} {{ addressInfo.city }} {{ addressInfo.district }} {{ addressInfo.detail }}
+        </el-descriptions-item>
+      </el-descriptions>
 
-        <!-- 收货信息 -->
-        <el-descriptions title="收货信息" :column="2" border style="margin-top: 20px;">
-          <el-descriptions-item label="收货人">{{ addressInfo.name }}</el-descriptions-item>
-          <el-descriptions-item label="联系电话">{{ addressInfo.phone }}</el-descriptions-item>
-          <el-descriptions-item label="收货地址" :span="2">
-            {{ addressInfo.province }} {{ addressInfo.city }} {{ addressInfo.district }} {{ addressInfo.detail }}
-          </el-descriptions-item>
-        </el-descriptions>
-
-        <!-- 商品信息 -->
-        <div style="margin-top: 20px;">
-          <h3>商品信息</h3>
-          <el-table :data="goodsList" border>
-            <el-table-column label="商品图片" width="100">
-              <template #default="{ row }">
-                <el-image
-                  :src="row.goods_image"
-                  style="width: 60px; height: 60px; border-radius: 4px"
-                  fit="cover"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="goods_name" label="商品名称" min-width="200" />
-            <el-table-column prop="price" label="单价" width="100">
-              <template #default="{ row }">
-                ¥{{ row.price }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="quantity" label="数量" width="80" />
-            <el-table-column prop="subtotal" label="小计" width="100">
-              <template #default="{ row }">
-                ¥{{ row.subtotal }}
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-
-        <!-- 操作按钮 -->
-        <div style="margin-top: 20px; text-align: center;">
-          <el-button 
-            v-if="orderInfo.status === 1" 
-            type="primary" 
-            @click="handleShip"
-            :loading="shipLoading"
-          >
-            发货
-          </el-button>
-          <el-button 
-            v-if="orderInfo.status === 0" 
-            type="danger" 
-            @click="handleCancel"
-          >
-            取消订单
-          </el-button>
-        </div>
+      <!-- 商品信息 -->
+      <div style="margin-top: 20px;">
+        <h3>商品信息</h3>
+        <el-table :data="goodsList" border>
+          <el-table-column label="商品图片" width="100">
+            <template #default="{ row }">
+              <el-image
+                :src="getImageUrl(row.goods_image)"
+                style="width: 60px; height: 60px; border-radius: 4px"
+                fit="cover"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column prop="goods_name" label="商品名称" min-width="200" />
+          <el-table-column prop="price" label="单价" width="100">
+            <template #default="{ row }">
+              ¥{{ row.price }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="quantity" label="数量" width="80" />
+          <el-table-column prop="subtotal" label="小计" width="100">
+            <template #default="{ row }">
+              ¥{{ row.subtotal }}
+            </template>
+          </el-table-column>
+        </el-table>
       </div>
-    </el-card>
+
+      <!-- 操作按钮 -->
+      <div style="margin-top: 20px; text-align: center;">
+        <el-button 
+          v-if="orderInfo.status === 1" 
+          type="primary" 
+          @click="handleShip"
+          :loading="shipLoading"
+        >
+          发货
+        </el-button>
+        <el-button 
+          v-if="orderInfo.status === 0" 
+          type="danger" 
+          @click="handleCancel"
+        >
+          取消订单
+        </el-button>
+      </div>
+    </div>
 
     <!-- 发货对话框 -->
-    <el-dialog v-model="shipDialogVisible" title="订单发货" width="500px">
+    <el-dialog v-model="shipDialogVisible" title="订单发货" width="500px" append-to-body>
       <el-form :model="shipForm" label-width="100px">
         <el-form-item label="快递公司">
           <el-select v-model="shipForm.express_company" placeholder="请选择快递公司">
@@ -102,49 +96,86 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="shipDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="confirmShip" :loading="shipLoading">
-            确认发货
-          </el-button>
-        </span>
+        <el-button @click="shipDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmShip">确认发货</el-button>
       </template>
     </el-dialog>
-  </div>
+
+    <template #footer>
+      <el-button @click="emit('update:visible', false)">关闭</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
 import { getOrderDetail, shipOrder, cancelOrder } from '@/api/order'
+import { getImageUrl } from '@/utils/image'
+import { formatDate } from '@/utils/format'
 
-const route = useRoute()
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    default: false
+  },
+  orderId: {
+    type: [String, Number],
+    default: null
+  }
+})
+
+const emit = defineEmits(['update:visible', 'refresh'])
 
 // 响应式数据
 const loading = ref(false)
 const shipLoading = ref(false)
 const shipDialogVisible = ref(false)
+
 const orderInfo = ref({})
 const addressInfo = ref({})
 const goodsList = ref([])
 
-// 发货表单
 const shipForm = reactive({
   express_company: '',
   express_no: ''
 })
 
+// 监听订单ID变化
+watch(
+  () => props.orderId,
+  (newId) => {
+    if (newId && props.visible) {
+      getDetail()
+    }
+  },
+  { immediate: true }
+)
+
+// 监听对话框显示状态
+watch(
+  () => props.visible,
+  (visible) => {
+    if (visible && props.orderId) {
+      getDetail()
+    }
+  }
+)
+
 // 获取订单详情
 const getDetail = async () => {
+  if (!props.orderId) return
+  
   try {
     loading.value = true
-    const response = await getOrderDetail(route.params.id)
-    orderInfo.value = response.order
-    addressInfo.value = response.address
-    goodsList.value = response.goods
+    const response = await getOrderDetail(props.orderId)
+    
+    // 由于request.js的响应拦截器已经返回了res.data，所以response就是data对象
+    orderInfo.value = response.order || {}
+    addressInfo.value = response.address || {}
+    goodsList.value = response.goods || []
   } catch (error) {
+    console.error('获取订单详情失败:', error)
     ElMessage.error('获取订单详情失败')
   } finally {
     loading.value = false
@@ -197,6 +228,7 @@ const confirmShip = async () => {
     ElMessage.success('发货成功')
     shipDialogVisible.value = false
     getDetail() // 刷新数据
+    emit('refresh') // 通知父组件刷新列表
   } catch (error) {
     ElMessage.error('发货失败')
   } finally {
@@ -216,17 +248,13 @@ const handleCancel = async () => {
     await cancelOrder({ id: orderInfo.value.id })
     ElMessage.success('订单已取消')
     getDetail() // 刷新数据
+    emit('refresh') // 通知父组件刷新列表
   } catch (error) {
     if (error !== 'cancel') {
       ElMessage.error('取消订单失败')
     }
   }
 }
-
-// 生命周期
-onMounted(() => {
-  getDetail()
-})
 </script>
 
 <style scoped lang="scss">

@@ -24,16 +24,15 @@
       </el-form-item>
 
       <el-form-item label="分类图片" prop="image">
-        <Upload
+        <SimpleUpload
           v-model="form.image"
           accept="image/*"
           :max-size="2"
-          :placeholder="'点击上传分类图片'"
           :tips="[
             '建议尺寸：200x200px，支持 JPG、PNG 格式',
             '文件大小不超过 2MB'
           ]"
-        />
+          />
       </el-form-item>
 
       <el-form-item label="排序" prop="sort">
@@ -47,15 +46,15 @@
 
       <el-form-item label="状态" prop="status">
         <el-radio-group v-model="form.status">
-          <el-radio :label="1">启用</el-radio>
-          <el-radio :label="0">禁用</el-radio>
+          <el-radio :value="1">启用</el-radio>
+          <el-radio :value="0">禁用</el-radio>
         </el-radio-group>
       </el-form-item>
     </el-form>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="visible = false">取消</el-button>
+        <el-button @click="emit('update:visible', false)">取消</el-button>
         <el-button type="primary" :loading="submitLoading" @click="submitForm">
           {{ submitLoading ? '保存中...' : '保存' }}
         </el-button>
@@ -65,10 +64,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { addCategory, updateCategory } from '@/api/category'
-import Upload from '@/components/Upload.vue'
+import { getImageUrl } from '@/utils/image'
+import { uploadImageFile, processImageData } from '@/utils/upload'
+import SimpleUpload from '@/components/SimpleUpload.vue'
 
 const props = defineProps({
   category: {
@@ -109,7 +110,19 @@ const rules = {
   ]
 }
 
-
+// 重置表单
+const resetForm = () => {
+  Object.assign(form, {
+    id: null,
+    name: '',
+    image: '',
+    sort: 0,
+    status: 1
+  })
+  if (formRef.value) {
+    formRef.value.resetFields()
+  }
+}
 
 // 监听分类数据变化
 watch(
@@ -136,13 +149,32 @@ const submitForm = async () => {
     await formRef.value.validate()
     submitLoading.value = true
 
+    // 处理图片上传
+    let imageUrl = processImageData(form.image)
+    
+    // 如果是文件对象，需要上传
+    if (form.image && form.image.file) {
+      try {
+        imageUrl = await uploadImageFile(form.image.file)
+      } catch (error) {
+        ElMessage.error('图片上传失败：' + error.message)
+        return
+      }
+    }
+
+    // 准备提交数据
+    const submitData = {
+      ...form,
+      image: imageUrl
+    }
+
     if (form.id) {
       // 编辑
-      await updateCategory(form)
+      await updateCategory(submitData)
       ElMessage.success('分类更新成功')
     } else {
       // 新增
-      await addCategory(form)
+      await addCategory(submitData)
       ElMessage.success('分类创建成功')
     }
 
@@ -154,24 +186,14 @@ const submitForm = async () => {
     submitLoading.value = false
   }
 }
-
-// 重置表单
-const resetForm = () => {
-  Object.assign(form, {
-    id: null,
-    name: '',
-    image: '',
-    sort: 0,
-    status: 1
-  })
-  if (formRef.value) {
-    formRef.value.resetFields()
-  }
-}
 </script>
 
 <style scoped lang="scss">
 .dialog-footer {
   text-align: right;
+}
+
+.image-preview {
+  margin-top: 10px;
 }
 </style> 

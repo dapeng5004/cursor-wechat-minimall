@@ -12,7 +12,7 @@ export function getBannerList(params) {
 // 获取轮播图详情
 export function getBannerDetail(id) {
   return request({
-    url: `/admin/banner/detail/${id}`,
+    url: `/admin/detail/${id}`,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getBannerDetail(id) {
 // 新增轮播图
 export function addBanner(data) {
   return request({
-    url: '/admin/banner/add',
+    url: '/admin/add',
     method: 'post',
     data
   })
@@ -29,7 +29,7 @@ export function addBanner(data) {
 // 更新轮播图
 export function updateBanner(data) {
   return request({
-    url: '/admin/banner/update',
+    url: '/admin/update',
     method: 'put',
     data
   })
@@ -38,7 +38,7 @@ export function updateBanner(data) {
 // 删除轮播图
 export function deleteBanner(data) {
   return request({
-    url: '/admin/banner/delete',
+    url: '/admin/delete',
     method: 'delete',
     data
   })
@@ -47,7 +47,16 @@ export function deleteBanner(data) {
 // 更新轮播图状态
 export function updateBannerStatus(data) {
   return request({
-    url: '/admin/banner/status',
+    url: '/admin/status',
+    method: 'put',
+    data
+  })
+}
+
+// 更新轮播图排序
+export function updateBannerSort(data) {
+  return request({
+    url: '/admin/sort',
     method: 'put',
     data
   })

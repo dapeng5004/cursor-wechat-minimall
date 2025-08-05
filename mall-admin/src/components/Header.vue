@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <div class="header-left">
-      <el-icon class="menu-toggle" @click="toggleSidebar">
+      <el-icon class="menu-toggle" @click="handleToggleSidebar">
         <Expand v-if="!isCollapse" />
         <Fold v-else />
       </el-icon>
@@ -41,8 +41,15 @@ const appStore = useAppStore()
 
 const isCollapse = computed(() => appStore.sidebarCollapse)
 
-const toggleSidebar = () => {
-  appStore.toggleSidebar()
+const emit = defineEmits(['toggle-sidebar'])
+
+const handleToggleSidebar = () => {
+  // 检查是否为移动端
+  if (window.innerWidth <= 768) {
+    emit('toggle-sidebar')
+  } else {
+    appStore.toggleSidebar()
+  }
 }
 
 const handleCommand = async (command) => {
@@ -54,10 +61,12 @@ const handleCommand = async (command) => {
         type: 'warning'
       })
       await userStore.logout()
-      router.push('/login')
       ElMessage.success('退出登录成功')
+      router.push('/login')
     } catch (error) {
-      // 用户取消操作
+      if (error !== 'cancel') {
+        ElMessage.error('退出登录失败')
+      }
     }
   } else if (command === 'profile') {
     ElMessage.info('个人信息功能开发中...')
@@ -76,10 +85,27 @@ const handleCommand = async (command) => {
   padding: 0 20px;
   box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
 
+  @media (max-width: 768px) {
+    padding: 0 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 10px;
+    height: 50px;
+  }
+
   .header-left {
     display: flex;
     align-items: center;
     gap: 20px;
+
+    @media (max-width: 768px) {
+      gap: 15px;
+    }
+
+    @media (max-width: 480px) {
+      gap: 10px;
+    }
 
     .menu-toggle {
       font-size: 20px;
@@ -89,12 +115,24 @@ const handleCommand = async (command) => {
       &:hover {
         color: var(--primary-color);
       }
+
+      @media (max-width: 480px) {
+        font-size: 18px;
+      }
     }
 
     .logo {
       font-size: 18px;
       font-weight: bold;
       color: var(--text-color-primary);
+
+      @media (max-width: 768px) {
+        font-size: 16px;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 14px;
+      }
     }
   }
 
@@ -112,9 +150,18 @@ const handleCommand = async (command) => {
         background-color: #f5f7fa;
       }
 
+      @media (max-width: 480px) {
+        padding: 6px 8px;
+        gap: 6px;
+      }
+
       .username {
         font-size: 14px;
         color: var(--text-color-regular);
+
+        @media (max-width: 480px) {
+          font-size: 12px;
+        }
       }
     }
   }

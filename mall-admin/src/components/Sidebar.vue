@@ -89,11 +89,27 @@ const menuList = [
   width: 240px;
   height: 100vh;
   background: #304156;
-  transition: width 0.3s;
+  transition: width 0.3s ease;
   overflow: hidden;
 
   &.sidebar-collapse {
     width: 64px;
+  }
+
+  @media (max-width: 768px) {
+    width: 240px;
+    
+    &.sidebar-collapse {
+      width: 240px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    width: 200px;
+    
+    &.sidebar-collapse {
+      width: 200px;
+    }
   }
 
   .sidebar-menu {
@@ -126,6 +142,35 @@ const menuList = [
 
     :deep(.el-sub-menu.is-active .el-sub-menu__title) {
       color: #fff;
+    }
+
+    // 移动端优化
+    @media (max-width: 768px) {
+      :deep(.el-menu-item) {
+        height: 50px;
+        line-height: 50px;
+        font-size: 14px;
+      }
+
+      :deep(.el-sub-menu__title) {
+        height: 50px;
+        line-height: 50px;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      :deep(.el-menu-item) {
+        height: 45px;
+        line-height: 45px;
+        font-size: 13px;
+      }
+
+      :deep(.el-sub-menu__title) {
+        height: 45px;
+        line-height: 45px;
+        font-size: 13px;
+      }
     }
   }
 }

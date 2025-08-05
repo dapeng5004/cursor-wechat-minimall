@@ -53,6 +53,15 @@ export function updateGoodsStatus(data) {
   })
 }
 
+// 商品推荐状态更新
+export function updateGoodsRecommend(data) {
+  return request({
+    url: '/admin/goods/recommend',
+    method: 'post',
+    data
+  })
+}
+
 // 批量上下架
 export function batchUpdateGoodsStatus(data) {
   return request({
