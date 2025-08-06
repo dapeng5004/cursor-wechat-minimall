@@ -116,7 +116,6 @@ app.listen(PORT, () => {
   // console.log(`环境: ${process.env.NODE_ENV || 'development'}`)
   console.log('=================================');
   console.log(`运行环境: ${process.env.NODE_ENV || 'development'}`)
-
   // console.log(`运行环境: ${process.env.NODE_ENV}`);
   console.log(`服务端口: ${PORT}`);
   console.log('数据库配置:');
