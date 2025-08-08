@@ -1,0 +1,7 @@
+/* pages/category-list/category-list.wxss */
+.container {
+  padding: 20rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+}

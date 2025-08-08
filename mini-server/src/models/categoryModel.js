@@ -18,11 +18,11 @@ class CategoryModel {
     return categories[0] || null
   }
 
-  // 根据父级 ID 获取子分类
+  // 获取所有顶级分类（由于没有parent_id字段，直接获取所有分类）
   static async getByParentId(parentId = 0) {
     return await executeQuery(
-      'SELECT * FROM categories WHERE parent_id = ? AND status = 1 ORDER BY sort ASC, id ASC',
-      [parentId]
+      'SELECT * FROM categories WHERE status = 1 ORDER BY sort ASC, id ASC',
+      []
     )
   }
 
@@ -32,21 +32,13 @@ class CategoryModel {
     return this.buildTree(allCategories)
   }
 
-  // 构建分类树
+  // 构建分类树（简化版本，由于没有parent_id字段，直接返回所有分类）
   static buildTree(categories, parentId = 0) {
-    const tree = []
-    
-    for (const category of categories) {
-      if (category.parent_id === parentId) {
-        const children = this.buildTree(categories, category.id)
-        if (children.length > 0) {
-          category.children = children
-        }
-        tree.push(category)
-      }
-    }
-    
-    return tree
+    // 由于没有parent_id字段，直接返回所有分类作为顶级分类
+    return categories.map(category => ({
+      ...category,
+      children: []
+    }))
   }
 
   // 创建分类

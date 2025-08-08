@@ -1,0 +1,148 @@
+/* pages/category-goods/category-goods.wxss */
+.container {
+  padding-bottom: 40rpx;
+}
+
+.category-goods-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  margin: 20rpx;
+  overflow: hidden;
+}
+
+.goods-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  padding: 0 20rpx 20rpx;
+}
+
+.goods-item-wrapper {
+  background-color: #f8f9fa;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+/* 加载更多 */
+.load-more {
+  padding: 40rpx 20rpx;
+  text-align: center;
+}
+
+/* 没有更多了 */
+.no-more {
+  padding: 40rpx 20rpx;
+  text-align: center;
+}
+
+.no-more-text {
+  font-size: 24rpx;
+  color: #999;
+  position: relative;
+}
+
+.no-more-text::before,
+.no-more-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 60rpx;
+  height: 1rpx;
+  background-color: #e0e0e0;
+}
+
+.no-more-text::before {
+  left: -80rpx;
+}
+
+.no-more-text::after {
+  right: -80rpx;
+}
+
+/* 分页错误重试 */
+.pagination-error {
+  margin: 40rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx 20rpx;
+}
+
+.pagination-error .error-icon {
+  font-size: 60rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.6;
+}
+
+.pagination-error .error-text {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 30rpx;
+}
+
+.retry-btn {
+  width: 200rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  background-color: #3cc51f;
+  color: #fff;
+  border-radius: 35rpx;
+  font-size: 28rpx;
+  border: none;
+}
+
+.retry-btn:active {
+  background-color: #2aad17;
+}
+
+.retry-btn::after {
+  border: none;
+}
+
+/* 空、错误、加载状态样式复用原有 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 16rpx;
+  margin: 40rpx 20rpx;
+}
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.5;
+}
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 40rpx;
+}
+.error-state {
+  margin-top: 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #e64340;
+}
+.error-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+.error-text {
+  font-size: 28rpx;
+  margin-bottom: 20rpx;
+}
+.error-btn {
+  width: 60%;
+  height: 56rpx;
+  background: #e64340;
+  color: #fff;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+}

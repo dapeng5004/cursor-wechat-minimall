@@ -109,7 +109,23 @@ const getCategoryGoods = async (req, res) => {
 // 获取首页分类
 const getHomeCategories = async (req, res) => {
   try {
+    const { limit = 3 } = req.query
     const categories = await CategoryModel.getByParentId(0)
+    
+    // 为每个分类查询商品
+    for (const category of categories) {
+      try {
+        const goodsResult = await GoodsModel.getList(
+          { category_id: category.id }, 
+          1, 
+          parseInt(limit)
+        )
+        category.goods = goodsResult.list || []
+      } catch (goodsError) {
+        console.error(`获取分类 ${category.id} 商品失败:`, goodsError)
+        category.goods = []
+      }
+    }
     
     log.info('获取首页分类成功', { count: categories.length })
     

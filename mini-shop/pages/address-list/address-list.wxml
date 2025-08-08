@@ -1,0 +1,76 @@
+<!--pages/address-list/address-list.wxml-->
+<view class="container">
+  <!-- 加载状态 -->
+  <loading wx:if="{{loading && addressList.length === 0}}" />
+  
+  <!-- 错误状态 -->
+  <view wx:if="{{hasError && !loading}}" class="error-container">
+    <view class="error-icon">⚠️</view>
+    <view class="error-text">加载失败，请重试</view>
+    <button class="retry-btn" bindtap="onRetry">重新加载</button>
+  </view>
+  
+  <!-- 空状态 -->
+  <view wx:if="{{isEmpty && !loading && !hasError}}" class="empty-container">
+    <view class="empty-icon">📍</view>
+    <view class="empty-text">暂无收货地址</view>
+    <view class="empty-desc">添加收货地址，享受便捷购物</view>
+  </view>
+  
+  <!-- 地址列表 -->
+  <view wx:if="{{!loading && !hasError && !isEmpty}}" class="address-list">
+    <view 
+      wx:for="{{addressList}}" 
+      wx:key="id" 
+      class="address-item {{isSelectMode ? 'select-mode' : ''}} {{item.isDefault ? 'default' : ''}}"
+      bindtap="{{isSelectMode ? 'onSelectAddress' : ''}}"
+      data-id="{{item.id}}"
+    >
+      <!-- 默认标识 -->
+      <view wx:if="{{item.isDefault}}" class="default-tag">默认</view>
+      
+      <!-- 地址信息 -->
+      <view class="address-info">
+        <view class="address-header">
+          <text class="name">{{item.name}}</text>
+          <text class="phone">{{item.phone}}</text>
+        </view>
+        <view class="address-detail">
+          <text class="province">{{item.province}}</text>
+          <text class="city">{{item.city}}</text>
+          <text class="district">{{item.district}}</text>
+          <text class="detail">{{item.detail}}</text>
+        </view>
+      </view>
+      
+      <!-- 操作按钮 -->
+      <view wx:if="{{!isSelectMode}}" class="address-actions">
+        <view class="action-btn" bindtap="onEditAddress" data-id="{{item.id}}">
+          <text class="action-icon">✏️</text>
+          <text class="action-text">编辑</text>
+        </view>
+        <view class="action-btn" bindtap="onDeleteAddress" data-id="{{item.id}}">
+          <text class="action-icon">🗑️</text>
+          <text class="action-text">删除</text>
+        </view>
+        <view wx:if="{{!item.isDefault}}" class="action-btn" bindtap="onSetDefault" data-id="{{item.id}}">
+          <text class="action-icon">⭐</text>
+          <text class="action-text">设为默认</text>
+        </view>
+      </view>
+      
+      <!-- 选择模式下的选中标识 -->
+      <view wx:if="{{isSelectMode}}" class="select-indicator">
+        <view class="select-icon {{selectedAddressId === item.id ? 'selected' : ''}}">
+          {{selectedAddressId === item.id ? '✓' : '○'}}
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 添加地址按钮 -->
+  <view wx:if="{{!isSelectMode}}" class="add-address-btn" bindtap="onAddAddress">
+    <text class="add-icon">+</text>
+    <text class="add-text">添加新地址</text>
+  </view>
+</view>

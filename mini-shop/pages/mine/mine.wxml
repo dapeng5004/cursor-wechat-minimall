@@ -1,0 +1,49 @@
+<!--pages/mine/mine.wxml-->
+<view class="container">
+  <!-- 用户信息区域 -->
+  <view class="user-section" bindtap="onUserTap">
+    <view class="user-info" wx:if="{{userInfo}}">
+      <view class="avatar">
+        <safe-image 
+          src="{{userInfo.avatarUrl}}" 
+          mode="aspectFill"
+          default-src="/images/default/avatar.png"
+        />
+      </view>
+      <view class="user-detail">
+        <view class="nickname">{{userInfo.nickName}}</view>
+        <view class="user-id">用户ID: {{userInfo.userId || '未知'}}</view>
+      </view>
+    </view>
+    <view class="login-btn" wx:else>
+      <view class="login-icon">👤</view>
+      <view class="login-text">点击登录</view>
+    </view>
+  </view>
+
+  <!-- 菜单列表 -->
+  <view class="menu-list">
+    <view class="menu-item" 
+          wx:for="{{menuList}}" 
+          wx:key="id"
+          bindtap="onNavigate"
+          data-url="{{item.url}}">
+      <view class="menu-icon">{{item.icon}}</view>
+      <view class="menu-name">{{item.name}}</view>
+      <view class="menu-arrow">></view>
+    </view>
+  </view>
+
+  <!-- 退出登录按钮 -->
+  <view class="logout-section" wx:if="{{userInfo}}">
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
+  </view>
+
+  <!-- 加载组件 -->
+  <loading 
+    show="{{loading}}" 
+    type="spinner" 
+    text="处理中..." 
+    mask="{{true}}"
+  />
+</view>

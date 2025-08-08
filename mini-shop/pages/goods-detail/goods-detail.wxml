@@ -1,0 +1,78 @@
+<!--pages/goods-detail/goods-detail.wxml-->
+<view class="container">
+  <!-- 商品详情 -->
+  <view class="goods-detail" wx:if="{{!globalLoading && !hasError}}">
+    <!-- 图片轮播 -->
+    <view class="goods-images">
+      <swiper 
+        class="image-swiper" 
+        indicator-dots="{{true}}" 
+        autoplay="{{false}}"
+        bindchange="onImageChange"
+      >
+        <swiper-item wx:for="{{imageList}}" wx:key="index">
+          <image 
+            src="{{item}}" 
+            mode="aspectFill"
+            class="goods-image"
+          />
+        </swiper-item>
+      </swiper>
+      <view class="image-indicator">
+        {{currentImageIndex + 1}} / {{imageCount}}
+      </view>
+    </view>
+
+    <!-- 商品信息 -->
+    <view class="goods-info">
+      <view class="goods-name">{{goods.name}}</view>
+      <view class="goods-price">
+        <text class="current-price">¥{{goods.price}}</text>
+        <text class="original-price" wx:if="{{goods.original_price && goods.original_price > goods.price}}">¥{{goods.original_price}}</text>
+      </view>
+      <view class="goods-stock">库存: {{goods.stock}}</view>
+      <view class="goods-sales">已售: {{goods.sales}}</view>
+    </view>
+
+    <!-- 商品描述 -->
+    <view class="goods-desc" wx:if="{{goods.description}}">
+      <view class="section-title">商品描述</view>
+      <view class="desc-content">{{goods.description}}</view>
+    </view>
+
+    <!-- 商品详情 -->
+    <view class="goods-detail-content" wx:if="{{goods.detail}}">
+      <view class="section-title">商品详情</view>
+      <rich-text nodes="{{goods.detail}}"></rich-text>
+    </view>
+  </view>
+
+  <!-- 错误状态 -->
+  <view class="error-state" wx:if="{{!globalLoading && hasError}}">
+    <view class="error-icon">⚠️</view>
+    <view class="error-text">加载失败</view>
+    <button class="error-btn" bindtap="onRetry">重新加载</button>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{!globalLoading && !hasError}}">
+    <view class="quantity-section">
+      <text class="quantity-label">数量:</text>
+      <view class="quantity-control">
+        <button class="quantity-btn" bindtap="onQuantityChange" data-action="minus">-</button>
+        <text class="quantity-text">{{quantity}}</text>
+        <button class="quantity-btn" bindtap="onQuantityChange" data-action="plus">+</button>
+      </view>
+    </view>
+    <view class="action-buttons">
+      <button class="add-cart-btn" bindtap="onAddToCart" loading="{{loading}}">加入购物车</button>
+      <button class="buy-now-btn" bindtap="onBuyNow">立即购买</button>
+    </view>
+  </view>
+
+  <!-- 全局加载组件 -->
+  <view wx:if="{{globalLoading}}" class="loading-container">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view>

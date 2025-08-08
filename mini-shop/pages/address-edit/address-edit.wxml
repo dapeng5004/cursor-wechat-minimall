@@ -1,0 +1,97 @@
+<!--pages/address-edit/address-edit.wxml-->
+<view class="container">
+  <!-- 加载状态 -->
+  <loading wx:if="{{loading}}" />
+  
+  <!-- 表单内容 -->
+  <view wx:if="{{!loading}}" class="form-container">
+    <!-- 收货人信息 -->
+    <view class="form-section">
+      <view class="form-item">
+        <view class="form-label">收货人</view>
+        <input 
+          class="form-input" 
+          placeholder="请输入收货人姓名" 
+          value="{{formData.name}}"
+          data-field="name"
+          bindinput="onInputChange"
+        />
+      </view>
+      
+      <view class="form-item">
+        <view class="form-label">手机号码</view>
+        <input 
+          class="form-input" 
+          type="number"
+          placeholder="请输入手机号码" 
+          value="{{formData.phone}}"
+          data-field="phone"
+          bindinput="onInputChange"
+        />
+      </view>
+    </view>
+    
+    <!-- 地址信息 -->
+    <view class="form-section">
+      <view class="form-item">
+        <view class="form-label">所在地区</view>
+        <picker 
+          mode="region" 
+          value="{{region}}"
+          bindchange="onRegionChange"
+          class="region-picker"
+        >
+          <view class="region-text {{regionText === '请选择所在地区' ? 'placeholder' : ''}}">
+            {{regionText}}
+          </view>
+          <view class="picker-arrow">></view>
+        </picker>
+      </view>
+      
+      <view class="form-item">
+        <view class="form-label">详细地址</view>
+        <textarea 
+          class="form-textarea" 
+          placeholder="请输入详细地址，如街道、门牌号等" 
+          value="{{formData.detail}}"
+          data-field="detail"
+          bindinput="onInputChange"
+        />
+      </view>
+    </view>
+    
+    <!-- 设置选项 -->
+    <view class="form-section">
+      <view class="form-item">
+        <view class="form-label">设为默认地址</view>
+        <switch 
+          checked="{{formData.isDefault}}" 
+          bindchange="onDefaultChange"
+          color="#3cc51f"
+        />
+      </view>
+    </view>
+  </view>
+  
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <!-- 删除按钮（仅编辑模式显示） -->
+    <button 
+      wx:if="{{isEdit}}" 
+      class="delete-btn" 
+      bindtap="onDelete"
+      disabled="{{submitting}}"
+    >
+      删除地址
+    </button>
+    
+    <!-- 保存按钮 -->
+    <button 
+      class="save-btn" 
+      bindtap="onSave"
+      disabled="{{submitting}}"
+    >
+      {{submitting ? '保存中...' : (isEdit ? '保存修改' : '保存地址')}}
+    </button>
+  </view>
+</view>

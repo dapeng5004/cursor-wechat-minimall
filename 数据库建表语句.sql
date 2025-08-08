@@ -204,6 +204,9 @@ INSERT INTO `categories` (`name`, `image`, `sort`, `status`) VALUES
 ('运动户外', '/uploads/category/sports.jpg', 5, 1),
 ('数码配件', '/uploads/category/digital.jpg', 6, 1);
 
+INSERT INTO goods (id, name, image, price, stock, status, is_recommend, category_id)
+VALUES (6, '测试商品', '/uploads/test.jpg', 99.99, 100, 1, 1, 1)
+ON DUPLICATE KEY UPDATE name='测试商品', image='/uploads/test.jpg', price=99.99, stock=100, status=1, is_recommend=1, category_id=1;
 -- 插入轮播图示例数据
 INSERT INTO `banners` (`title`, `image`, `link`, `sort`, `status`) VALUES
 ('新品上市', '/uploads/banner/banner1.jpg', '/pages/goods/list?category=1', 1, 1),
@@ -245,3 +248,39 @@ ALTER TABLE `order_goods` COMMENT = '订单商品表 - 存储订单商品明细'
 ALTER TABLE `banners` COMMENT = '轮播图表 - 存储首页轮播图';
 ALTER TABLE `admins` COMMENT = '管理员表 - 存储后台管理员信息';
 ALTER TABLE `configs` COMMENT = '系统配置表 - 存储系统配置信息'; 
+
+
+--测试首页推荐商品列表
+SELECT * FROM goods WHERE category_id IN (2,4,5,6,7,8) AND status=1;
+
+INSERT INTO goods (name, price, category_id, status) VALUES
+('测试商品A', 99.99, 2, 1),
+('测试商品B', 199.99, 4, 1),
+('测试商品C', 299.99, 5, 1);
+
+-- 假设分类ID为2,4,5,6,7,8
+INSERT INTO goods (name, price, stock, image, category_id, status)
+VALUES
+('服装A', 99.99, 100, '/uploads/test1.jpg', 2, 1),
+('服装B', 129.99, 80, '/uploads/test2.jpg', 2, 1),
+('服装C', 159.99, 60, '/uploads/test3.jpg', 2, 1),
+
+('美妆A', 59.99, 120, '/uploads/test4.jpg', 4, 1),
+('美妆B', 89.99, 90, '/uploads/test5.jpg', 4, 1),
+('美妆C', 109.99, 70, '/uploads/test6.jpg', 4, 1),
+
+('运动A', 199.99, 50, '/uploads/test7.jpg', 5, 1),
+('运动B', 249.99, 40, '/uploads/test8.jpg', 5, 1),
+('运动C', 299.99, 30, '/uploads/test9.jpg', 5, 1),
+
+('数码A', 399.99, 60, '/uploads/test10.jpg', 6, 1),
+('数码B', 499.99, 40, '/uploads/test11.jpg', 6, 1),
+('数码C', 599.99, 20, '/uploads/test12.jpg', 6, 1),
+
+('服装D', 109.99, 70, '/uploads/test13.jpg', 7, 1),
+('服装E', 139.99, 60, '/uploads/test14.jpg', 7, 1),
+('服装F', 169.99, 50, '/uploads/test15.jpg', 7, 1),
+
+('配饰A', 39.99, 80, '/uploads/test16.jpg', 8, 1),
+('配饰B', 59.99, 60, '/uploads/test17.jpg', 8, 1),
+('配饰C', 79.99, 40, '/uploads/test18.jpg', 8, 1);

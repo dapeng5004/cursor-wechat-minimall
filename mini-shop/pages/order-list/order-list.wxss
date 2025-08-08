@@ -1,0 +1,2 @@
+/* pages/order-list/order-list.wxss */
+.container { padding: 20rpx; text-align: center; }

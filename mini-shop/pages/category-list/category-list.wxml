@@ -1,0 +1,4 @@
+<!--pages/category-list/category-list.wxml-->
+<view class="container">
+  <text>分类列表页面</text>
+</view>

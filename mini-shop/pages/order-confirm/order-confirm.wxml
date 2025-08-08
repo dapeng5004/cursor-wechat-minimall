@@ -1,0 +1,115 @@
+<!--pages/order-confirm/order-confirm.wxml-->
+<view class="container">
+  <!-- 加载状态 -->
+  <loading wx:if="{{loading}}" />
+  
+  <!-- 页面内容 -->
+  <view wx:if="{{!loading}}" class="content">
+    <!-- 收货地址 -->
+    <view class="address-section" bindtap="onSelectAddress">
+      <view wx:if="{{selectedAddress}}" class="address-info">
+        <view class="address-header">
+          <text class="name">{{selectedAddress.name}}</text>
+          <text class="phone">{{selectedAddress.phone}}</text>
+        </view>
+        <view class="address-detail">
+          <text>{{selectedAddress.province}} {{selectedAddress.city}} {{selectedAddress.district}}</text>
+          <text class="detail">{{selectedAddress.detail}}</text>
+        </view>
+      </view>
+      <view wx:else class="address-empty">
+        <text class="empty-text">请选择收货地址</text>
+      </view>
+      <view class="address-arrow">></view>
+    </view>
+    
+    <!-- 商品列表 -->
+    <view class="goods-section">
+      <view class="section-title">商品信息</view>
+      <view class="goods-list">
+        <view 
+          wx:for="{{orderInfo.goods}}" 
+          wx:key="id" 
+          class="goods-item"
+        >
+          <image class="goods-image" src="{{item.image}}" mode="aspectFill" />
+          <view class="goods-info">
+            <view class="goods-name">{{item.name}}</view>
+            <view class="goods-spec">{{item.spec || '默认规格'}}</view>
+            <view class="goods-price">
+              <text class="price">¥{{item.price}}</text>
+              <text class="quantity">x{{item.quantity}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 订单信息 -->
+    <view class="order-section">
+      <view class="section-title">订单信息</view>
+      
+      <!-- 订单备注 -->
+      <view class="form-item">
+        <view class="form-label">订单备注</view>
+        <textarea 
+          class="form-textarea" 
+          placeholder="请输入订单备注（选填）" 
+          value="{{remark}}"
+          bindinput="onRemarkChange"
+        />
+      </view>
+      
+      <!-- 支付方式 -->
+      <view class="form-item">
+        <view class="form-label">支付方式</view>
+        <radio-group class="pay-method-group" bindchange="onPayMethodChange">
+          <label class="pay-method-item">
+            <radio value="wechat" checked="{{payMethod === 'wechat'}}" />
+            <text class="pay-method-text">微信支付</text>
+          </label>
+          <label class="pay-method-item">
+            <radio value="alipay" checked="{{payMethod === 'alipay'}}" />
+            <text class="pay-method-text">支付宝</text>
+          </label>
+        </radio-group>
+      </view>
+    </view>
+    
+    <!-- 价格明细 -->
+    <view class="price-section">
+      <view class="section-title">价格明细</view>
+      <view class="price-item">
+        <text class="price-label">商品总价</text>
+        <text class="price-value">¥{{orderInfo.totalPrice}}</text>
+      </view>
+      <view class="price-item">
+        <text class="price-label">运费</text>
+        <text class="price-value">¥{{orderInfo.freight}}</text>
+      </view>
+      <view wx:if="{{orderInfo.discount > 0}}" class="price-item">
+        <text class="price-label">优惠金额</text>
+        <text class="price-value discount">-¥{{orderInfo.discount}}</text>
+      </view>
+      <view class="price-item total">
+        <text class="price-label">实付金额</text>
+        <text class="price-value">¥{{orderInfo.actualPrice}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 底部提交按钮 -->
+  <view class="bottom-bar">
+    <view class="total-info">
+      <text class="total-label">实付金额：</text>
+      <text class="total-price">¥{{orderInfo.actualPrice}}</text>
+    </view>
+    <button 
+      class="submit-btn" 
+      bindtap="onSubmitOrder"
+      disabled="{{submitting}}"
+    >
+      {{submitting ? '提交中...' : '提交订单'}}
+    </button>
+  </view>
+</view>

@@ -1,0 +1,102 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+  <!-- 轮播图区域 -->
+  <view class="banner-section">
+    <swiper 
+      class="banner-swiper" 
+      indicator-dots="{{true}}" 
+      autoplay="{{true}}" 
+      interval="{{3000}}" 
+      duration="{{500}}"
+      circular="{{true}}"
+    >
+      <swiper-item wx:for="{{bannerList}}" wx:key="id">
+        <safe-image 
+          src="{{item.image}}" 
+          mode="aspectFill" 
+          class="banner-image"
+          default-src="/images/default/banner.png"
+          bindtap="onBannerTap"
+          data-banner="{{item}}"
+        />
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <!-- 推荐商品区域 -->
+  <view class="recommend-section" wx:if="{{recommendList.length > 0}}">
+    <view class="section-header">
+      <view class="section-title">推荐商品</view>
+      <view class="section-more" bindtap="onViewMore" data-type="recommend">
+        更多 >
+      </view>
+    </view>
+    <view class="goods-grid">
+      <view class="goods-item-wrapper" wx:for="{{recommendList}}" wx:key="id">
+        <goods-item 
+          goods="{{item}}"
+          show-add-cart="{{true}}"
+          show-stock="{{true}}"
+          size="normal"
+          bind:addcartsuccess="onAddCartSuccess"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类商品区域 -->
+  <view class="category-section" wx:for="{{categoryList}}" wx:key="id" wx:if="{{item.goods && item.goods.length > 0}}">
+    <view class="section-header">
+      <view class="section-title">{{item.name}}</view>
+      <view class="section-more" bindtap="onViewCategoryGoods" data-category="{{item}}">
+        更多 >
+      </view>
+    </view>
+    <view class="category-goods">
+      <scroll-view scroll-x="{{true}}" class="goods-scroll">
+        <view class="goods-scroll-content">
+          <view class="goods-item-wrapper scroll-item" wx:for="{{item.goods}}" wx:key="id" wx:for-item="goods">
+            <goods-item 
+              goods="{{goods}}"
+              show-add-cart="{{true}}"
+              show-stock="{{true}}"
+              size="small"
+              bind:addcartsuccess="onAddCartSuccess"
+            />
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore}}">
+    <loading 
+      show="{{loading}}" 
+      type="circle" 
+      text="加载中..." 
+      style="inline"
+      mask="{{false}}"
+    />
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && isEmpty}}">
+    <view class="empty-icon">📦</view>
+    <view class="empty-text">暂无商品数据</view>
+    <button class="empty-btn" bindtap="onRefresh">刷新重试</button>
+  </view>
+
+  <!-- 回到顶部 -->
+  <view class="back-to-top" wx:if="{{showBackTop}}" bindtap="onBackToTop">
+    <text class="back-to-top-icon">↑</text>
+  </view>
+
+  <!-- 全局加载组件 -->
+  <loading 
+    show="{{globalLoading}}" 
+    type="spinner" 
+    text="加载中..." 
+    mask="{{true}}"
+  />
+</view>

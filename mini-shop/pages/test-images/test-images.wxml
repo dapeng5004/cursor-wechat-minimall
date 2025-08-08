@@ -1,0 +1,39 @@
+<view class="container">
+  <view class="header">
+    <text class="title">图片显示测试</text>
+    <text class="subtitle">测试safe-image组件的默认图片功能</text>
+  </view>
+
+  <view class="test-list">
+    <view class="test-item" wx:for="{{testImages}}" wx:key="name">
+      <view class="test-header">
+        <text class="test-name">{{item.name}}</text>
+      </view>
+      
+      <view class="image-container">
+        <safe-image 
+          src="{{item.src}}"
+          default-src="{{item.defaultSrc}}"
+          mode="aspectFill"
+          class="test-image"
+          bindload="onImageLoad"
+          binderror="onImageError"
+          bindtap="onImageTap"
+        />
+      </view>
+      
+      <view class="test-info">
+        <text class="info-item">源路径: {{item.src || '空'}}</text>
+        <text class="info-item">默认图片: {{item.defaultSrc}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="tips">
+    <text class="tip-title">测试说明：</text>
+    <text class="tip-item">• 开发环境会优先显示默认图片</text>
+    <text class="tip-item">• 生产环境会尝试加载真实图片</text>
+    <text class="tip-item">• 加载失败时会显示默认图片</text>
+    <text class="tip-item">• 空路径和null路径会直接显示默认图片</text>
+  </view>
+</view> 

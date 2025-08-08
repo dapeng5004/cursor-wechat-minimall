@@ -1,0 +1,46 @@
+<view class="container">
+  <view class="header">
+    <text class="title">HTTP连接测试</text>
+    <text class="subtitle">测试小程序与后端HTTP服务器的连接状态</text>
+  </view>
+
+  <view class="actions">
+    <button class="btn btn-primary" bindtap="onRetry" disabled="{{isLoading}}">
+      {{isLoading ? '测试中...' : '重新测试'}}
+    </button>
+    <button class="btn btn-secondary" bindtap="onCopyResult" wx:if="{{testResults.length > 0}}">
+      复制结果
+    </button>
+  </view>
+
+  <view class="results" wx:if="{{testResults.length > 0}}">
+    <view class="result-item" wx:for="{{testResults}}" wx:key="name">
+      <view class="result-header">
+        <text class="result-name">{{item.name}}</text>
+        <view class="result-status {{item.success ? 'success' : 'error'}}">
+          {{item.success ? '成功' : '失败'}}
+        </view>
+      </view>
+      
+      <view class="result-details">
+        <text class="detail-item">状态码: {{item.statusCode || 'N/A'}}</text>
+        <text class="detail-item" wx:if="{{item.success}}">响应时间: {{item.responseTime}}ms</text>
+        <text class="detail-item error-text" wx:if="{{!item.success}}">错误: {{item.error}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{isLoading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在测试HTTPS连接...</text>
+  </view>
+
+  <view class="tips">
+    <text class="tip-title">测试说明：</text>
+    <text class="tip-item">• 健康检查：测试服务器基本连接</text>
+    <text class="tip-item">• 轮播图API：测试数据接口</text>
+    <text class="tip-item">• 分类API：测试分类数据</text>
+    <text class="tip-item">• 商品API：测试商品数据</text>
+    <text class="tip-item">• 如果所有测试失败，请检查服务器是否启动</text>
+  </view>
+</view> 

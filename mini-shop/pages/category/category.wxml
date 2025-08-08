@@ -1,0 +1,46 @@
+<!--pages/category/category.wxml-->
+<view class="container">
+  <!-- 分类列表 -->
+  <view class="category-list" wx:if="{{!globalLoading && !hasError && categoryList.length > 0}}">
+    <view class="category-item" 
+          wx:for="{{categoryList}}" 
+          wx:key="id"
+          bindtap="onCategoryTap"
+          data-category="{{item}}">
+      <view class="category-image">
+        <safe-image 
+          src="{{item.image}}" 
+          mode="aspectFill"
+          default-src="/images/default/category.png"
+        />
+      </view>
+      <view class="category-info">
+        <view class="category-name">{{item.name}}</view>
+        <view class="category-desc" wx:if="{{item.description}}">{{item.description}}</view>
+      </view>
+      <view class="category-arrow">></view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!globalLoading && !hasError && isEmpty}}">
+    <view class="empty-icon">📂</view>
+    <view class="empty-text">暂无分类数据</view>
+    <button class="empty-btn" bindtap="onRetry">刷新重试</button>
+  </view>
+
+  <!-- 错误状态 -->
+  <view class="error-state" wx:if="{{!globalLoading && hasError}}">
+    <view class="error-icon">⚠️</view>
+    <view class="error-text">加载失败</view>
+    <button class="error-btn" bindtap="onRetry">重新加载</button>
+  </view>
+
+  <!-- 全局加载组件 -->
+  <loading 
+    show="{{globalLoading}}" 
+    type="spinner" 
+    text="加载中..." 
+    mask="{{true}}"
+  />
+</view>

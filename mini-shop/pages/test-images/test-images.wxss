@@ -1,0 +1,91 @@
+.container {
+  padding: 40rpx;
+  background-color: #f8f8f8;
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60rpx;
+}
+
+.title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.test-list {
+  margin-bottom: 40rpx;
+}
+
+.test-item {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.test-header {
+  margin-bottom: 20rpx;
+}
+
+.test-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.image-container {
+  margin-bottom: 20rpx;
+}
+
+.test-image {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 8rpx;
+  border: 2rpx solid #eee;
+}
+
+.test-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.info-item {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.tips {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.tip-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.tip-item {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 10rpx;
+} 

@@ -1,0 +1,64 @@
+<!--components/goods-item/goods-item.wxml-->
+<view class="goods-item" bindtap="onItemTap">
+  <!-- 商品图片 -->
+  <view class="goods-image">
+    <safe-image 
+      src="{{goods.image}}" 
+      mode="aspectFill"
+      lazy-load="{{true}}"
+      class="image"
+      default-src="/images/default/goods.png"
+    />
+    <!-- 标签 -->
+    <view class="tags" wx:if="{{goods.tags && goods.tags.length > 0}}">
+      <text class="tag" wx:for="{{goods.tags}}" wx:key="index">{{item}}</text>
+    </view>
+  </view>
+  
+  <!-- 商品信息 -->
+  <view class="goods-info">
+    <!-- 商品名称 -->
+    <view class="goods-name">{{goods.name || '商品名称'}}</view>
+    
+    <!-- 商品描述 -->
+    <view class="goods-desc" wx:if="{{goods.desc}}">{{goods.desc}}</view>
+    
+    <!-- 价格和库存 -->
+    <view class="price-stock">
+      <view class="price">
+        <text class="price-symbol">¥</text>
+        <text class="price-value">{{goods.price || '0.00'}}</text>
+        <text class="original-price" wx:if="{{goods.originalPrice && goods.originalPrice > goods.price}}">¥{{goods.originalPrice}}</text>
+      </view>
+      <view class="stock" wx:if="{{showStock}}">
+        库存: {{goods.stock || 0}}
+      </view>
+    </view>
+    
+    <!-- 销量和评分 -->
+    <view class="sales-rating" wx:if="{{showSales || showRating}}">
+      <view class="sales" wx:if="{{showSales}}">
+        已售 {{goods.sales || 0}}
+      </view>
+      <view class="rating" wx:if="{{showRating && goods.rating}}">
+        <text class="rating-text">{{goods.rating}}</text>
+        <view class="stars">
+          <text class="star {{index < goods.rating ? 'active' : ''}}" wx:for="{{[1,2,3,4,5]}}" wx:key="index">★</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 操作按钮 -->
+  <view class="goods-actions" wx:if="{{showAddCart}}">
+    <button 
+      class="add-cart-btn" 
+      size="mini" 
+      type="primary"
+      bindtap="onAddToCart"
+      data-goods="{{goods}}"
+    >
+      加入购物车
+    </button>
+  </view>
+</view>

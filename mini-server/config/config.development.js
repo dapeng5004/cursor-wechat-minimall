@@ -13,6 +13,6 @@ module.exports = {
     path: process.env.UPLOAD_PATH || './uploads'
   },
   logLevel: 'debug',
-  apiBaseUrl: 'http://localhost:3002',
+  apiBaseUrl: 'https://localhost:3002',
   debug: true
 }

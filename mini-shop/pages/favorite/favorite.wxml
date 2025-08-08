@@ -1,0 +1,70 @@
+<!--pages/favorite/favorite.wxml-->
+<view class="container">
+  <!-- 加载状态 -->
+  <loading wx:if="{{globalLoading}}" />
+  
+  <!-- 错误状态 -->
+  <view wx:if="{{hasError && !globalLoading}}" class="error-container">
+    <view class="error-icon">⚠️</view>
+    <view class="error-text">加载失败，请重试</view>
+    <button class="retry-btn" bindtap="onRetry">重新加载</button>
+  </view>
+  
+  <!-- 空状态 -->
+  <view wx:if="{{isEmpty && !globalLoading && !hasError}}" class="empty-container">
+    <view class="empty-icon">❤️</view>
+    <view class="empty-text">暂无收藏商品</view>
+    <view class="empty-desc">去发现更多好物吧</view>
+    <button class="go-shopping-btn" bindtap="onGoShopping">去逛逛</button>
+  </view>
+  
+  <!-- 收藏列表 -->
+  <view wx:if="{{!globalLoading && !hasError && !isEmpty}}" class="favorite-list">
+    <view 
+      wx:for="{{favoriteList}}" 
+      wx:key="id" 
+      class="favorite-item"
+    >
+      <!-- 商品信息 -->
+      <view class="goods-info" bindtap="onGoodsTap" data-id="{{item.goods.id}}">
+        <image class="goods-image" src="{{item.goods.image}}" mode="aspectFill" />
+        <view class="goods-detail">
+          <view class="goods-name">{{item.goods.name}}</view>
+          <view class="goods-desc">{{item.goods.description || '暂无描述'}}</view>
+          <view class="goods-price">
+            <text class="price">¥{{item.goods.price}}</text>
+            <text class="original-price" wx:if="{{item.goods.originalPrice > item.goods.price}}">¥{{item.goods.originalPrice}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 操作按钮 -->
+      <view class="action-buttons">
+        <button 
+          class="action-btn add-cart-btn" 
+          bindtap="onAddToCart" 
+          data-id="{{item.goods.id}}"
+        >
+          加入购物车
+        </button>
+        <button 
+          class="action-btn cancel-btn" 
+          bindtap="onCancelFavorite" 
+          data-id="{{item.goods.id}}"
+        >
+          取消收藏
+        </button>
+      </view>
+    </view>
+    
+    <!-- 加载更多 -->
+    <view wx:if="{{loading && favoriteList.length > 0}}" class="loading-more">
+      <text>加载中...</text>
+    </view>
+    
+    <!-- 没有更多 -->
+    <view wx:if="{{!hasMore && favoriteList.length > 0}}" class="no-more">
+      <text>没有更多了</text>
+    </view>
+  </view>
+</view> 

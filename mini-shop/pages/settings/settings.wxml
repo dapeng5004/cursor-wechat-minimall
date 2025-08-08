@@ -1,0 +1,70 @@
+<!--pages/settings/settings.wxml-->
+<view class="container">
+  <!-- 用户信息 -->
+  <view class="user-section">
+    <view class="user-info">
+      <image class="avatar" src="{{userInfo.avatarUrl || '/images/default/avatar.png'}}" mode="aspectFill" />
+      <view class="user-detail">
+        <view class="nickname">{{userInfo.nickName || '未登录'}}</view>
+        <view class="user-id" wx:if="{{userInfo}}">ID: {{userInfo.id || '未知'}}</view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 设置菜单 -->
+  <view class="settings-list">
+    <view 
+      wx:for="{{menuList}}" 
+      wx:key="id" 
+      class="menu-item"
+      bindtap="onMenuTap"
+      data-id="{{item.id}}"
+      data-url="{{item.url}}"
+      data-type="{{item.type}}"
+    >
+      <view class="menu-left">
+        <text class="menu-icon">{{item.icon}}</text>
+        <text class="menu-name">{{item.name}}</text>
+      </view>
+      
+      <!-- 开关类型 -->
+      <switch 
+        wx:if="{{item.type === 'switch'}}"
+        checked="{{settings[item.value]}}"
+        bindchange="onSwitchChange"
+        data-value="{{item.value}}"
+        color="#3cc51f"
+      />
+      
+      <!-- 普通类型 -->
+      <view wx:else class="menu-arrow">></view>
+    </view>
+  </view>
+  
+  <!-- 其他操作 -->
+  <view class="action-list">
+    <view class="action-item" bindtap="onCheckUpdate">
+      <view class="action-left">
+        <text class="action-icon">🔄</text>
+        <text class="action-name">检查更新</text>
+      </view>
+      <view class="action-right">
+        <text class="version-text">v{{version}}</text>
+        <view class="action-arrow">></view>
+      </view>
+    </view>
+    
+    <view class="action-item" bindtap="onClearCache">
+      <view class="action-left">
+        <text class="action-icon">🗑️</text>
+        <text class="action-name">清除缓存</text>
+      </view>
+      <view class="action-arrow">></view>
+    </view>
+  </view>
+  
+  <!-- 退出登录 -->
+  <view class="logout-section" wx:if="{{userInfo}}">
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
+  </view>
+</view> 

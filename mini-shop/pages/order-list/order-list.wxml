@@ -1,0 +1,113 @@
+<!--pages/order-list/order-list.wxml-->
+<view class="container">
+  <!-- 状态筛选栏 -->
+  <view class="status-bar" wx:if="{{!globalLoading && !hasError}}">
+    <view class="status-item {{status === item.value ? 'active' : ''}}" 
+          wx:for="{{statusList}}" 
+          wx:key="value"
+          bindtap="onStatusChange" 
+          data-status="{{item.value}}">
+      {{item.name}}
+    </view>
+  </view>
+
+  <!-- 订单列表 -->
+  <view class="order-list" wx:if="{{!globalLoading && !hasError && !isEmpty}}">
+    <view class="order-item" wx:for="{{orderList}}" wx:key="id">
+      <!-- 订单头部 -->
+      <view class="order-header">
+        <view class="order-no">订单号: {{item.orderNo}}</view>
+        <view class="order-status {{getStatusColor(item.status)}}">
+          {{getStatusText(item.status)}}
+        </view>
+      </view>
+
+      <!-- 商品列表 -->
+      <view class="goods-list">
+        <view class="goods-item" wx:for="{{item.goods}}" wx:key="id" wx:for-item="goods">
+          <view class="goods-image">
+            <safe-image 
+              src="{{goods.image}}" 
+              mode="aspectFill"
+              default-src="/images/default/goods.png"
+            />
+          </view>
+          <view class="goods-info">
+            <view class="goods-name">{{goods.name}}</view>
+            <view class="goods-price">¥{{goods.price}}</view>
+            <view class="goods-quantity">x{{goods.quantity}}</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 订单信息 -->
+      <view class="order-info">
+        <view class="order-total">
+          共{{item.totalQuantity}}件商品 合计: ¥{{item.totalAmount}}
+        </view>
+        <view class="order-time">{{item.created_at}}</view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="order-actions">
+        <button class="action-btn" 
+                wx:if="{{item.status === 'pending'}}"
+                bindtap="onPayOrder" 
+                data-order="{{item}}">
+          立即支付
+        </button>
+        <button class="action-btn" 
+                wx:if="{{item.status === 'pending'}}"
+                bindtap="onCancelOrder" 
+                data-order="{{item}}">
+          取消订单
+        </button>
+        <button class="action-btn" 
+                wx:if="{{item.status === 'shipped'}}"
+                bindtap="onConfirmReceive" 
+                data-order="{{item}}">
+          确认收货
+        </button>
+        <button class="action-btn" 
+                bindtap="onOrderTap" 
+                data-order="{{item}}">
+          查看详情
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!globalLoading && !hasError && isEmpty}}">
+    <view class="empty-icon">📋</view>
+    <view class="empty-text">暂无订单</view>
+    <button class="empty-btn" bindtap="onRetry">刷新重试</button>
+  </view>
+
+  <!-- 错误状态 -->
+  <view class="error-state" wx:if="{{!globalLoading && hasError}}">
+    <view class="error-icon">⚠️</view>
+    <view class="error-text">加载失败</view>
+    <button class="error-btn" bindtap="onRetry">重新加载</button>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{!globalLoading && !hasError && !isEmpty}}">
+    <loading 
+      show="{{loading}}" 
+      type="circle" 
+      text="加载中..." 
+      style="inline"
+      mask="{{false}}"
+    />
+    <view class="no-more" wx:if="{{!hasMore && !loading}}">没有更多了</view>
+  </view>
+
+  <!-- 全局加载组件 -->
+  <loading 
+    show="{{globalLoading}}" 
+    type="spinner" 
+    text="加载中..." 
+    mask="{{true}}"
+  />
+</view>

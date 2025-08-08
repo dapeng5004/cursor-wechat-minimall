@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "商城首页",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 50,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "goods-item": "/components/goods-item/goods-item",
+    "loading": "/components/loading/loading",
+    "safe-image": "/components/safe-image/safe-image"
+  }
+}
